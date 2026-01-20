@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:background="@drawable/splash_gradient">
+
+    <!-- Animated text -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="12dp">
+
+        <TextView
+            android:id="@+id/textWelcome"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Welcome User"
+            android:textSize="40sp"
+            android:textStyle="bold"
+            android:textColor="@color/carbon_black"/>
+    </LinearLayout>
+
+    <!-- Subtitle -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Small steps. Big change."
+        android:textSize="14sp"
+        android:textColor="@color/slate_grey"
+        android:letterSpacing="0.05"
+        android:layout_marginBottom="20dp"/>
+
+    <!-- Loader -->
+    <ProgressBar
+        android:layout_width="34dp"
+        android:layout_height="34dp"
+        android:indeterminate="true"
+        android:indeterminateTint="@color/gunmetal"/>
+
+</LinearLayout>

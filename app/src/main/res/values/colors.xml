@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bright_snow">#F8F9FA</color>
+    <color name="platinum">#E9ECEF</color>
+    <color name="alabaster_grey">#DEE2E6</color>
+    <color name="pale_slate">#CED4DA</color>
+    <color name="pale_slate_2">#ADB5BD</color>
+    <color name="slate_grey">#6C757D</color>
+    <color name="iron_grey">#495057</color>
+    <color name="gunmetal">#343A40</color>
+    <color name="carbon_black">#212529</color>
+</resources>

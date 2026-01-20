@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Focus</string>
+    <string name="streak_widget_description">Displays your current daily streak.</string>
+    <string name="affirmation_widget_description">Displays your daily affirmation.</string>
+    <string name="mirror_mode_widget_description">A widget for self-reflection.</string>
+    <string name="quote_widget_description">Daily new quotes for motivation.</string>
+</resources>
