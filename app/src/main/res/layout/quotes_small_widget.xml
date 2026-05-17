@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_background"
+    android:padding="16dp">
+
+    <!-- Category Tag at the Top -->
+    <TextView
+        android:id="@+id/widget_quote_category"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:background="@android:color/transparent"
+        android:fontFamily="@font/literata_bold"
+        android:text="Focus"
+        android:textColor="#FC6E20"
+        android:textSize="11sp"
+        android:textStyle="bold"
+        android:textAllCaps="true" />
+
+    <!-- Quote Mark Graphic -->
+    <TextView
+        android:id="@+id/widget_quote_mark"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:fontFamily="@font/literata_bold"
+        android:text="“"
+        android:textColor="#FC6E20"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:lineHeight="0dp"
+        android:includeFontPadding="false" />
+
+    <!-- Quote Body in the center -->
+    <TextView
+        android:id="@+id/widget_quote_text"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/widget_quote_category"
+        android:layout_marginTop="8dp"
+        android:fontFamily="@font/literata_medium"
+        android:gravity="center_vertical"
+        android:ellipsize="end"
+        android:maxLines="3"
+        android:text="Focus on your goals."
+        android:textColor="#FFE7D0"
+        android:textSize="14sp"
+        android:lineSpacingMultiplier="1.2" />
+
+</RelativeLayout>

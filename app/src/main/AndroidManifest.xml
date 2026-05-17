@@ -25,47 +25,47 @@
         </activity>
 
         <receiver
-            android:name=".widget.QuoteWidgetProvider"
+            android:name=".widget.QuotesSmallWidgetProvider"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/quote_widget_info" />
-        </receiver>
-        
-        <receiver
-            android:name=".widget.StreakWidgetProvider"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/streak_widget_info" />
+                android:resource="@xml/quotes_small_widget_info" />
         </receiver>
 
         <receiver
-            android:name=".widget.AffirmationWidgetProvider"
+            android:name=".widget.QuotesMediumWidgetProvider"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/affirmation_widget_info" />
+                android:resource="@xml/quotes_medium_widget_info" />
         </receiver>
 
         <receiver
-            android:name=".widget.MirrorModeWidgetProvider"
+            android:name=".widget.JournalSmallWidgetProvider"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
-                android:resource="@xml/mirror_mode_widget_info" />
+                android:resource="@xml/journal_small_widget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.JournalMediumWidgetProvider"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/journal_medium_widget_info" />
         </receiver>
 
     </application>

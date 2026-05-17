@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:initialLayout="@layout/journal_medium_widget"
+    android:minWidth="250dp"
+    android:minHeight="180dp"
+    android:resizeMode="horizontal|vertical"
+    android:description="@string/journal_medium_description"
+    android:updatePeriodMillis="0"
+    android:widgetCategory="home_screen">
+</appwidget-provider>

@@ -88,6 +88,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             repository?.addToHistory(nextQuote)
         }
+        updateQuotesWidgets(nextQuote.text, nextQuote.category)
     }
 
     fun refreshQuoteByCategory(category: String) {
@@ -96,6 +97,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             repository?.addToHistory(nextQuote)
         }
+        updateQuotesWidgets(nextQuote.text, nextQuote.category)
     }
 
     fun search(query: String) {
@@ -119,6 +121,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val dateDisplay = dateFormat.format(Date())
         viewModelScope.launch {
             repository?.insertJournalEntry(content, dateDisplay)
+            updateJournalWidgets()
         }
     }
 
@@ -142,6 +145,62 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val cal2 = Calendar.getInstance().apply { timeInMillis = time2 }
         return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
                cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR)
+    }
+
+    private fun updateQuotesWidgets(quoteText: String, quoteCategory: String) {
+        val context = getApplication<android.app.Application>().applicationContext
+        val prefs = context.getSharedPreferences("widget_data", android.content.Context.MODE_PRIVATE)
+        prefs.edit()
+            .putString("current_quote_text", quoteText)
+            .putString("current_quote_category", quoteCategory)
+            .apply()
+
+        val appWidgetManager = android.appwidget.AppWidgetManager.getInstance(context)
+
+        // Small Widget Broadcast
+        val smallIntent = android.content.Intent(context, com.example.motivation.widget.QuotesSmallWidgetProvider::class.java).apply {
+            action = android.appwidget.AppWidgetManager.ACTION_APPWIDGET_UPDATE
+        }
+        val smallIds = appWidgetManager.getAppWidgetIds(
+            android.content.ComponentName(context, com.example.motivation.widget.QuotesSmallWidgetProvider::class.java)
+        )
+        smallIntent.putExtra(android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_IDS, smallIds)
+        context.sendBroadcast(smallIntent)
+
+        // Medium Widget Broadcast
+        val mediumIntent = android.content.Intent(context, com.example.motivation.widget.QuotesMediumWidgetProvider::class.java).apply {
+            action = android.appwidget.AppWidgetManager.ACTION_APPWIDGET_UPDATE
+        }
+        val mediumIds = appWidgetManager.getAppWidgetIds(
+            android.content.ComponentName(context, com.example.motivation.widget.QuotesMediumWidgetProvider::class.java)
+        )
+        mediumIntent.putExtra(android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_IDS, mediumIds)
+        context.sendBroadcast(mediumIntent)
+    }
+
+    private fun updateJournalWidgets() {
+        val context = getApplication<android.app.Application>().applicationContext
+        val appWidgetManager = android.appwidget.AppWidgetManager.getInstance(context)
+
+        // Small Journal Widget Broadcast
+        val smallIntent = android.content.Intent(context, com.example.motivation.widget.JournalSmallWidgetProvider::class.java).apply {
+            action = android.appwidget.AppWidgetManager.ACTION_APPWIDGET_UPDATE
+        }
+        val smallIds = appWidgetManager.getAppWidgetIds(
+            android.content.ComponentName(context, com.example.motivation.widget.JournalSmallWidgetProvider::class.java)
+        )
+        smallIntent.putExtra(android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_IDS, smallIds)
+        context.sendBroadcast(smallIntent)
+
+        // Medium Journal Widget Broadcast
+        val mediumIntent = android.content.Intent(context, com.example.motivation.widget.JournalMediumWidgetProvider::class.java).apply {
+            action = android.appwidget.AppWidgetManager.ACTION_APPWIDGET_UPDATE
+        }
+        val mediumIds = appWidgetManager.getAppWidgetIds(
+            android.content.ComponentName(context, com.example.motivation.widget.JournalMediumWidgetProvider::class.java)
+        )
+        mediumIntent.putExtra(android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_IDS, mediumIds)
+        context.sendBroadcast(mediumIntent)
     }
 }
 

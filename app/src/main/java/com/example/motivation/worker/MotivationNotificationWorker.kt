@@ -46,7 +46,7 @@ class MotivationNotificationWorker(
             val userName = settingsDataStore.userName.first()
             if (userName.isBlank()) return Result.failure()
 
-            title = "Your Daily Affirmation"
+            title = "Your Daily Quote"
             content = getTodaysAffirmation(userName, dayOfYear)
             destination = "name_affirmations"
 

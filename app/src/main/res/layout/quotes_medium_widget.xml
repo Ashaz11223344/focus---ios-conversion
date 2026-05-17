@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_background"
+    android:padding="22dp">
+
+    <!-- Quote Mark Icon (Opening) -->
+    <TextView
+        android:id="@+id/widget_quote_mark_open"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentStart="true"
+        android:fontFamily="@font/literata_bold"
+        android:text="“"
+        android:textColor="#FC6E20"
+        android:textSize="36sp"
+        android:textStyle="bold"
+        android:includeFontPadding="false"
+        android:lineSpacingExtra="0dp" />
+
+    <!-- Category Badge (Top Right) -->
+    <TextView
+        android:id="@+id/widget_quote_category"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="4dp"
+        android:fontFamily="@font/literata_bold"
+        android:text="Motivation"
+        android:textColor="#FC6E20"
+        android:textSize="12sp"
+        android:textStyle="bold"
+        android:textAllCaps="true"
+        android:letterSpacing="0.1" />
+
+    <!-- Quote Text Body (Center-aligned with ample space) -->
+    <TextView
+        android:id="@+id/widget_quote_text"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/widget_quote_mark_open"
+        android:layout_above="@id/widget_quote_mark_close"
+        android:layout_marginTop="6dp"
+        android:layout_marginBottom="6dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:fontFamily="@font/literata_italic"
+        android:gravity="center"
+        android:ellipsize="end"
+        android:maxLines="5"
+        android:text="The only way to do great work is to love what you do. Keep pushing forward."
+        android:textColor="#FFE7D0"
+        android:textSize="17sp"
+        android:lineSpacingMultiplier="1.25" />
+
+    <!-- Quote Mark Icon (Closing) -->
+    <TextView
+        android:id="@+id/widget_quote_mark_close"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:fontFamily="@font/literata_bold"
+        android:text="”"
+        android:textColor="#FC6E20"
+        android:textSize="36sp"
+        android:textStyle="bold"
+        android:includeFontPadding="false"
+        android:lineSpacingExtra="0dp" />
+
+</RelativeLayout>

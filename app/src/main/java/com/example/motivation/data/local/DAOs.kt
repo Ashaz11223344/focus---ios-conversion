@@ -12,6 +12,9 @@ interface MotivationDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertJournalEntry(entry: JournalEntryEntity)
 
+    @Query("SELECT * FROM journal_entries ORDER BY timestamp DESC LIMIT 1")
+    suspend fun getLatestJournalEntryDirect(): JournalEntryEntity?
+
     // Mood
     @Query("SELECT * FROM mood_entries ORDER BY timestamp DESC")
     fun getAllMoodEntries(): Flow<List<MoodEntryEntity>>
