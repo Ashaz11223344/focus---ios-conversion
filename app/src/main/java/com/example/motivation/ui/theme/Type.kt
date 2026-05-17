@@ -4,42 +4,59 @@ import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.sp
 import com.example.motivation.R
 
-val Oswald = FontFamily(
-    androidx.compose.ui.text.font.Font(R.font.oswald_regular),
-    androidx.compose.ui.text.font.Font(R.font.oswald_bold, FontWeight.Bold)
+val LiterataFontFamily = FontFamily(
+    Font(resId = R.font.literata_regular, weight = FontWeight.Normal),
+    Font(resId = R.font.literata_italic, weight = FontWeight.Normal, style = FontStyle.Italic),
+    Font(resId = R.font.literata_bold, weight = FontWeight.Bold),
+    Font(resId = R.font.literata_medium, weight = FontWeight.Medium)
 )
 
-// Set of Material typography styles to start with
+val PlaywriteGBSFontFamily = FontFamily(
+    Font(resId = R.font.playwrite_gbs_regular, weight = FontWeight.Normal),
+    Font(resId = R.font.playwrite_gbs_italic, weight = FontWeight.Normal, style = FontStyle.Italic)
+)
+
 val Typography = Typography(
+    displayLarge = TextStyle(
+        fontFamily = LiterataFontFamily,
+        fontWeight = FontWeight.Bold,
+        fontSize = 32.sp
+    ),
+    displayMedium = TextStyle(
+        fontFamily = LiterataFontFamily,
+        fontWeight = FontWeight.Bold,
+        fontSize = 24.sp
+    ),
+    headlineLarge = TextStyle(
+        fontFamily = LiterataFontFamily,
+        fontWeight = FontWeight.Bold,
+        fontSize = 20.sp
+    ),
+    headlineMedium = TextStyle(
+        fontFamily = LiterataFontFamily,
+        fontWeight = FontWeight.Medium,
+        fontSize = 18.sp
+    ),
     bodyLarge = TextStyle(
-        fontFamily = Oswald,
+        fontFamily = LiterataFontFamily,
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
-        lineHeight = 24.sp,
-        letterSpacing = 0.5.sp
+        lineHeight = 24.sp
     ),
-    headlineSmall = TextStyle(
-        fontFamily = Oswald,
-        fontWeight = FontWeight.Bold,
-        fontSize = 24.sp,
-        lineHeight = 32.sp,
-        letterSpacing = 0.sp
+    bodyMedium = TextStyle(
+        fontFamily = LiterataFontFamily,
+        fontWeight = FontWeight.Normal,
+        fontSize = 14.sp
     ),
-    titleLarge = TextStyle(
-        fontFamily = Oswald,
-        fontWeight = FontWeight.Bold,
-        fontSize = 22.sp,
-        lineHeight = 28.sp,
-        letterSpacing = 0.sp
-    ),
-    titleMedium = TextStyle(
-        fontFamily = Oswald,
-        fontWeight = FontWeight.Bold,
-        fontSize = 18.sp,
-        lineHeight = 24.sp,
-        letterSpacing = 0.15.sp
+    labelLarge = TextStyle(
+        fontFamily = LiterataFontFamily,
+        fontWeight = FontWeight.Medium,
+        fontSize = 12.sp,
+        letterSpacing = 1.sp
     )
 )

@@ -40,14 +40,8 @@ class QuoteWidgetProvider : AppWidgetProvider() {
         appWidgetManager: AppWidgetManager,
         appWidgetId: Int
     ) {
-        // Access the quotes directly from the QuoteRepository object
-        val quotes = QuoteRepository.allQuotes
-        if (quotes.isEmpty()) return
-
-        // Get the quote for the current day
-        val calendar = Calendar.getInstance()
-        val dayOfYear = calendar.get(Calendar.DAY_OF_YEAR)
-        val quote = quotes[dayOfYear % quotes.size]
+        QuoteRepository.initialize(context)
+        val quote = QuoteRepository.getRandomQuote()
 
         val options = appWidgetManager.getAppWidgetOptions(appWidgetId)
         val minWidth = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH)
@@ -63,7 +57,7 @@ class QuoteWidgetProvider : AppWidgetProvider() {
 
         val views = RemoteViews(context.packageName, layoutId)
         // Set the text directly from the quote string
-        views.setTextViewText(R.id.quote_text, quote)
+        views.setTextViewText(R.id.quote_text, quote.text)
 
         val intent = Intent(context, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(context, 0, intent, if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0)

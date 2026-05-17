@@ -1,12 +1,14 @@
 package com.example.motivation.ui
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -27,19 +29,27 @@ import com.example.motivation.viewmodel.PersonalizationViewModel
 // --- The main Hub Screen for all personalization features ---
 @Composable
 fun PersonalizationHubScreen(navController: NavController) {
-    Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
     ) {
-        Text("Personalize Your Motivation", style = MaterialTheme.typography.headlineMedium)
-        Spacer(modifier = Modifier.height(32.dp))
-        Button(onClick = { navController.navigate("name_affirmations") }, modifier = Modifier.fillMaxWidth()) {
-            Text("Your Affirmations")
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(onClick = { navController.navigate("mirror_mode") }, modifier = Modifier.fillMaxWidth()) {
-            Text("Mirror Mode")
+        Column(
+            modifier = Modifier
+                .widthIn(max = 480.dp)
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("Personalize Your Motivation", style = MaterialTheme.typography.headlineMedium)
+            Spacer(modifier = Modifier.height(32.dp))
+            Button(onClick = { navController.navigate("name_affirmations") }, modifier = Modifier.fillMaxWidth()) {
+                Text("Your Affirmations")
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(onClick = { navController.navigate("mirror_mode") }, modifier = Modifier.fillMaxWidth()) {
+                Text("Mirror Mode")
+            }
         }
     }
 }
@@ -49,30 +59,38 @@ fun PersonalizationHubScreen(navController: NavController) {
 fun NameInputScreen(viewModel: PersonalizationViewModel, onNameSaved: () -> Unit) {
     var name by remember { mutableStateOf("") }
 
-    Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
     ) {
-        Text("What should we call you?", style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center)
-        Spacer(modifier = Modifier.height(24.dp))
-        OutlinedTextField(
-            value = name,
-            onValueChange = { name = it },
-            label = { Text("Your Name") },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth()
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Button(
-            onClick = {
-                viewModel.saveUserName(name)
-                onNameSaved()
-            },
-            enabled = name.isNotBlank(),
-            modifier = Modifier.fillMaxWidth()
+        Column(
+            modifier = Modifier
+                .widthIn(max = 480.dp)
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text("Continue")
+            Text("What should we call you?", style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center)
+            Spacer(modifier = Modifier.height(24.dp))
+            OutlinedTextField(
+                value = name,
+                onValueChange = { name = it },
+                label = { Text("Your Name") },
+                singleLine = true,
+                modifier = Modifier.fillMaxWidth()
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Button(
+                onClick = {
+                    viewModel.saveUserName(name)
+                    onNameSaved()
+                },
+                enabled = name.isNotBlank(),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Continue")
+            }
         }
     }
 }
@@ -80,20 +98,28 @@ fun NameInputScreen(viewModel: PersonalizationViewModel, onNameSaved: () -> Unit
 // --- Feature 2: Name-based Affirmations ---
 @Composable
 fun NameAffirmationsScreen(viewModel: PersonalizationViewModel, onNavigateHome: () -> Unit) {
-    Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = viewModel.getTodaysAffirmation(),
-            style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(vertical = 8.dp),
-            textAlign = TextAlign.Center
-        )
-        Spacer(modifier = Modifier.height(32.dp))
-        Button(onClick = onNavigateHome) {
-            Text("Back to Quotes")
+        Column(
+            modifier = Modifier
+                .widthIn(max = 480.dp)
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = viewModel.getTodaysAffirmation(),
+                style = MaterialTheme.typography.headlineSmall,
+                modifier = Modifier.padding(vertical = 8.dp),
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(32.dp))
+            Button(onClick = onNavigateHome) {
+                Text("Back to Quotes")
+            }
         }
     }
 }
@@ -102,27 +128,35 @@ fun NameAffirmationsScreen(viewModel: PersonalizationViewModel, onNavigateHome: 
 @Composable
 fun MirrorModeScreen(viewModel: PersonalizationViewModel, onNavigateHome: () -> Unit) {
     val name = viewModel.userName.value ?: ""
-    Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = "Look at yourself, $name.",
-            style = MaterialTheme.typography.displaySmall,
-            textAlign = TextAlign.Center,
-            lineHeight = 40.sp
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = "This is the person who doesn’t quit.",
-            style = MaterialTheme.typography.headlineMedium,
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.secondary
-        )
-        Spacer(modifier = Modifier.height(32.dp))
-        Button(onClick = onNavigateHome) {
-            Text("Back to Quotes")
+        Column(
+            modifier = Modifier
+                .widthIn(max = 540.dp)
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Look at yourself, $name.",
+                style = MaterialTheme.typography.displaySmall,
+                textAlign = TextAlign.Center,
+                lineHeight = 40.sp
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "This is the person who doesn’t quit.",
+                style = MaterialTheme.typography.headlineMedium,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.secondary
+            )
+            Spacer(modifier = Modifier.height(32.dp))
+            Button(onClick = onNavigateHome) {
+                Text("Back to Quotes")
+            }
         }
     }
 }

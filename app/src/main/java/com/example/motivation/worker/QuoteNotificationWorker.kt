@@ -13,21 +13,12 @@ class QuoteNotificationWorker(
 ) : CoroutineWorker(appContext, workerParams) {
 
     override suspend fun doWork(): Result {
-        // Access the list of strings directly from the static repository object
-        val quotes = QuoteRepository.allQuotes
-        if (quotes.isEmpty()) {
-            return Result.failure() // No quotes to show
-        }
+        QuoteRepository.initialize(applicationContext)
+        val quote = QuoteRepository.getRandomQuote()
 
-        // Get the quote for the current day
-        val calendar = Calendar.getInstance()
-        val dayOfYear = calendar.get(Calendar.DAY_OF_YEAR)
-        val quote = quotes[dayOfYear % quotes.size]
-
-        // Show the notification using the quote string directly
         NotificationHelper(applicationContext).showNotification(
             "Daily Motivation",
-            quote
+            quote.text
         )
 
         return Result.success()

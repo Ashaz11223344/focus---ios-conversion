@@ -16,6 +16,25 @@ class MotivationNotificationWorker(
 
     override suspend fun doWork(): Result {
         val settingsDataStore = SettingsDataStore(applicationContext)
+        
+        // --- Quiet Hours Check ---
+        if (settingsDataStore.quietHoursEnabled.first()) {
+            val start = settingsDataStore.quietHoursStart.first()
+            val end = settingsDataStore.quietHoursEnd.first()
+            val now = Calendar.getInstance()
+            val currentMinutes = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE)
+            
+            val isInQuietHours = if (start < end) {
+                currentMinutes in start..end
+            } else {
+                currentMinutes >= start || currentMinutes <= end
+            }
+            
+            if (isInQuietHours) {
+                return Result.success() // Skip notification during quiet hours
+            }
+        }
+
         val contentType = settingsDataStore.notificationContentType.first()
 
         val dayOfYear = Calendar.getInstance().get(Calendar.DAY_OF_YEAR)
@@ -32,13 +51,12 @@ class MotivationNotificationWorker(
             destination = "name_affirmations"
 
         } else { // "Quote"
-            val allQuotes = QuoteRepository.allQuotes
-            if (allQuotes.isEmpty()) return Result.failure()
+            QuoteRepository.initialize(applicationContext)
+            val quote = QuoteRepository.getRandomQuote()
 
             title = "Your Daily Quote"
-            content = allQuotes[dayOfYear % allQuotes.size]
+            content = quote.text
             destination = "quotes"
-            // The incorrect call to addShownQuoteHash was here and has been removed.
         }
 
         NotificationHelper(applicationContext).showNotification(title, content, destination)

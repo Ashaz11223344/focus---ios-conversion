@@ -59,7 +59,7 @@ class NotificationHelper(private val context: Context) {
         val pendingIntent = PendingIntent.getActivity(context, title.hashCode(), intent, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
 
         val notification = NotificationCompat.Builder(context, GENERAL_CHANNEL_ID)
-            .setSmallIcon(R.mipmap.logo)
+            .setSmallIcon(R.drawable.ic_quote_mark)
             .setContentTitle(title)
             .setContentText(content)
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)

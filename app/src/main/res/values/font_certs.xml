@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <array name="com_google_android_gms_fonts_certs">
+        <item>@array/com_google_android_gms_fonts_certs_dev</item>
+        <item>@array/com_google_android_gms_fonts_certs_prod</item>
+    </array>
+    <string-array name="com_google_android_gms_fonts_certs_dev">
+        <item>
+            MIIEqDCCA5CgAwIBAgIJANWK9s6HcHNMMA0GCSqGSIb3DQEBBQUAMIGUMQswCQYDVQQGEwJVUzETMBEG
+            A1UECBMKQ2FsaWZvcm5pYTEWMBQGA1UEBxMNTW91bnRhaW4gVmlldzEQMA4GA1UEChMHR29vZ2xlMRQw
+            EgYDVQQLEwtBbmRyb2lkIE1TUDEUMBIGA1UEAxMLR29vZ2xlIExMQzEUMBIGA1UEAxMLR29vZ2xlIExM
+            QzAeFw0wODA4MjEyMzM5MDVaFw0zNjAxMDcyMzM5MDVaMGUMMQswCQYDVQQGEwJVUzETMBEGA1UECBMK
+            Q2FsaWZvcm5pYTEWMBQGA1UEBxMNTW91bnRhaW4gVmlldzEQMA4GA1UEChMHR29vZ2xlMRQwEgYDVQQL
+            EwtBbmRyb2lkIE1TUDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALq4G9zZ9p/VfXqf126p
+            9Z7j1z6+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86
+            +86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86
+            +86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86
+            +86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86
+            +86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86
+            +86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86
+            +86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86
+            +86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86
+        </item>
+    </string-array>
+    <string-array name="com_google_android_gms_fonts_certs_prod">
+        <item>
+            MIIEqDCCA5CgAwIBAgIJANWK9s6HcHNMMA0GCSqGSIb3DQEBBQUAMIGUMQswCQYDVQQGEwJVUzETMBEG
+            A1UECBMKQ2FsaWZvcm5pYTEWMBQGA1UEBxMNTW91bnRhaW4gVmlldzEQMA4GA1UEChMHR29vZ2xlMRQw
+            EgYDVQQLEwtBbmRyb2lkIE1TUDEUMBIGA1UEAxMLR29vZ2xlIExMQzEUMBIGA1UEAxMLR29vZ2xlIExM
+            QzAeFw0wODA4MjEyMzM5MDVaFw0zNjAxMDcyMzM5MDVaMGUMMQswCQYDVQQGEwJVUzETMBEGA1UECBMK
+            Q2FsaWZvcm5pYTEWMBQGA1UEBxMNTW91bnRhaW4gVmlldzEQMA4GA1UEChMHR29vZ2xlMRQwEgYDVQQL
+            EwtBbmRyb2lkIE1TUDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALq4G9zZ9p/VfXqf126p
+            9Z7j1z6+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86
+            +86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86
+            +86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86
+            +86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86
+            +86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86
+            +86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86
+            +86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86
+            +86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86+86
+        </item>
+    </string-array>
+</resources>

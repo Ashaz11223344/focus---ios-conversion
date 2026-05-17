@@ -1,111 +1,261 @@
 package com.example.motivation.ui
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.Divider
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Slider
-import androidx.compose.material3.Switch
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import android.app.TimePickerDialog
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.motivation.viewmodel.SettingsViewModel
 import kotlin.math.roundToInt
 
 @Composable
 fun SettingsScreen(settingsViewModel: SettingsViewModel = viewModel()) {
-    val contentType by settingsViewModel.notificationContentType.collectAsState()
-    val notificationMode by settingsViewModel.notificationMode.collectAsState()
-    val interval by settingsViewModel.notificationIntervalMinutes.collectAsState()
     val count by settingsViewModel.notificationCountPerDay.collectAsState()
     val streakReminderEnabled by settingsViewModel.streakReminderEnabled.collectAsState()
+    val quietHoursEnabled by settingsViewModel.quietHoursEnabled.collectAsState()
+    val quietHoursStart by settingsViewModel.quietHoursStart.collectAsState()
+    val quietHoursEnd by settingsViewModel.quietHoursEnd.collectAsState()
+    
+    val context = LocalContext.current
 
     LazyColumn(
-        modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(horizontal = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        item { Text("Settings", style = MaterialTheme.typography.headlineMedium, modifier = Modifier.padding(vertical = 16.dp)) }
+        item { Spacer(modifier = Modifier.height(8.dp)) }
 
         // --- Main Notification Settings ---
         item {
-            Text("Main Notifications", style = MaterialTheme.typography.titleLarge)
-            // Content Type Selection
-            Text("Content Type", style = MaterialTheme.typography.titleMedium)
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    RadioButton(selected = contentType == "Affirmation", onClick = { settingsViewModel.setNotificationContentType("Affirmation") })
-                    Text("Affirmation")
-                }
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    RadioButton(selected = contentType == "Quote", onClick = { settingsViewModel.setNotificationContentType("Quote") })
-                    Text("Quote")
-                }
-            }
-            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                "Notifications", 
+                style = MaterialTheme.typography.headlineSmall.copy(
+                    fontWeight = FontWeight.Bold,
+                    fontStyle = FontStyle.Italic
+                ),
+                color = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(12.dp))
             
-            // Timing Mode Selection
-            Text("Timing Mode", style = MaterialTheme.typography.titleMedium)
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    RadioButton(selected = notificationMode == "DailyCount", onClick = { settingsViewModel.setNotificationMode("DailyCount") })
-                    Text("Per Day")
-                }
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    RadioButton(selected = notificationMode == "Frequency", onClick = { settingsViewModel.setNotificationMode("Frequency") })
-                    Text("Frequency")
-                }
-            }
-
-            AnimatedVisibility(visible = notificationMode == "DailyCount") {
-                Column(modifier = Modifier.padding(start = 16.dp)) {
-                    Text("Notifications per day: $count", style = MaterialTheme.typography.titleSmall)
-                    Slider(value = count.toFloat(), onValueChange = { settingsViewModel.setDailyCountSettings(it.roundToInt()) }, valueRange = 1f..10f, steps = 8)
-                }
-            }
-
-            AnimatedVisibility(visible = notificationMode == "Frequency") {
-                Column(modifier = Modifier.padding(start = 16.dp)) {
-                    Text("Notify every: $interval minutes", style = MaterialTheme.typography.titleSmall)
-                    Slider(value = interval.toFloat(), onValueChange = { settingsViewModel.setFrequencySettings(it.roundToInt()) }, valueRange = 1f..120f, steps = 118)
-                    Text(text = "Note: The minimum interval is 15 minutes.", style = MaterialTheme.typography.bodySmall)
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BoxDefaults.cardBorder()
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "Quotes per day", 
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                        Text(
+                            "$count", 
+                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Slider(
+                        value = count.toFloat(), 
+                        onValueChange = { settingsViewModel.setDailyCountSettings(it.roundToInt()) }, 
+                        valueRange = 1f..10f, 
+                        steps = 8,
+                        colors = SliderDefaults.colors(
+                            thumbColor = MaterialTheme.colorScheme.primary,
+                            activeTrackColor = MaterialTheme.colorScheme.primary,
+                            inactiveTrackColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f)
+                        )
+                    )
+                    Text(
+                        "How many inspirational quotes you want to receive daily.", 
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
+                    )
                 }
             }
         }
 
-        item { Divider(modifier = Modifier.padding(vertical = 24.dp)) }
+        // --- Quiet Hours Section ---
+        item {
+            Text(
+                "Quiet Hours", 
+                style = MaterialTheme.typography.headlineSmall.copy(
+                    fontWeight = FontWeight.Bold,
+                    fontStyle = FontStyle.Italic
+                ),
+                color = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BoxDefaults.cardBorder()
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    SettingRow(label = "Enable Quiet Hours") {
+                        Switch(
+                            checked = quietHoursEnabled, 
+                            onCheckedChange = { settingsViewModel.setQuietHoursEnabled(it) },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = MaterialTheme.colorScheme.primary,
+                                checkedTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+                            )
+                        )
+                    }
+                    Text(
+                        "No notifications will be sent during this period.", 
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
+                    )
+                    
+                    if (quietHoursEnabled) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Divider(color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.1f))
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            TimeSetting(
+                                label = "Starts at",
+                                time = formatMinutesToTime(quietHoursStart),
+                                onClick = {
+                                    showTimePicker(context, quietHoursStart) { h, m ->
+                                        settingsViewModel.setQuietHoursTime(h * 60 + m, quietHoursEnd)
+                                    }
+                                }
+                            )
+                            TimeSetting(
+                                label = "Ends at",
+                                time = formatMinutesToTime(quietHoursEnd),
+                                onClick = {
+                                    showTimePicker(context, quietHoursEnd) { h, m ->
+                                        settingsViewModel.setQuietHoursTime(quietHoursStart, h * 60 + m)
+                                    }
+                                }
+                            )
+                        }
+                    }
+                }
+            }
+        }
 
         // --- Streak Reminder Settings ---
         item {
-            Text("Streak Reminder", style = MaterialTheme.typography.titleLarge)
-            SettingRow(label = "Enable end-of-day reminder") {
-                Switch(checked = streakReminderEnabled, onCheckedChange = { settingsViewModel.setStreakReminderEnabled(it) })
+            Text(
+                "Reminders", 
+                style = MaterialTheme.typography.headlineSmall.copy(
+                    fontWeight = FontWeight.Bold,
+                    fontStyle = FontStyle.Italic
+                ),
+                color = MaterialTheme.colorScheme.primary
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BoxDefaults.cardBorder()
+            ) {
+                Column(modifier = Modifier.padding(16.dp)) {
+                    SettingRow(label = "Streak reminder") {
+                        Switch(
+                            checked = streakReminderEnabled, 
+                            onCheckedChange = { settingsViewModel.setStreakReminderEnabled(it) },
+                            colors = SwitchDefaults.colors(
+                                checkedThumbColor = MaterialTheme.colorScheme.primary,
+                                checkedTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+                            )
+                        )
+                    }
+                    Text(
+                        "Get a reminder at 8 PM if you haven't checked in today.", 
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.5f)
+                    )
+                }
             }
-            Text("If you haven\'t completed your intent, you\'ll get a reminder around 8 PM.", style = MaterialTheme.typography.bodySmall)
         }
+
+        item { Spacer(modifier = Modifier.height(24.dp)) }
+    }
+}
+
+@Composable
+private fun TimeSetting(label: String, time: String, onClick: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .clickable { onClick() }
+            .padding(8.dp)
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.6f)
+        )
+        Text(
+            text = time,
+            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+            color = MaterialTheme.colorScheme.primary
+        )
     }
 }
 
 @Composable
 private fun SettingRow(label: String, content: @Composable () -> Unit) {
     Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+        modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(text = label)
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyLarge,
+            color = MaterialTheme.colorScheme.secondary
+        )
         content()
     }
+}
+
+private fun formatMinutesToTime(minutes: Int): String {
+    val hours = minutes / 60
+    val mins = minutes % 60
+    val ampm = if (hours >= 12) "PM" else "AM"
+    val displayHours = when {
+        hours == 0 -> 12
+        hours > 12 -> hours - 12
+        else -> hours
+    }
+    return String.format("%d:%02d %s", displayHours, mins, ampm)
+}
+
+private fun showTimePicker(context: android.content.Context, currentMinutes: Int, onTimeSelected: (Int, Int) -> Unit) {
+    val h = currentMinutes / 60
+    val m = currentMinutes % 60
+    TimePickerDialog(context, { _, hour, minute ->
+        onTimeSelected(hour, minute)
+    }, h, m, false).show()
 }

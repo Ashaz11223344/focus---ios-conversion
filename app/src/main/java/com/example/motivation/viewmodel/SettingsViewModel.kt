@@ -28,8 +28,18 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     val notificationIntervalMinutes = settingsDataStore.notificationIntervalMinutes.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 60)
     val notificationCountPerDay = settingsDataStore.notificationCountPerDay.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 1)
     val streakReminderEnabled = settingsDataStore.streakReminderEnabled.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), true)
+    val quietHoursEnabled = settingsDataStore.quietHoursEnabled.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), false)
+    val quietHoursStart = settingsDataStore.quietHoursStart.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 1320)
+    val quietHoursEnd = settingsDataStore.quietHoursEnd.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), 240)
 
     // --- ViewModel Methods ---
+    fun setQuietHoursEnabled(enabled: Boolean) = viewModelScope.launch {
+        settingsDataStore.setQuietHoursEnabled(enabled)
+    }
+
+    fun setQuietHoursTime(startMinutes: Int, endMinutes: Int) = viewModelScope.launch {
+        settingsDataStore.setQuietHoursTime(startMinutes, endMinutes)
+    }
     fun setNotificationContentType(type: String) = viewModelScope.launch {
         settingsDataStore.setNotificationContentType(type)
         scheduleMotivationWorker()

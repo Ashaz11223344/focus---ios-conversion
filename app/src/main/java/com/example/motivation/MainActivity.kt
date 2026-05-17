@@ -12,29 +12,34 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import com.example.motivation.ui.* 
+import androidx.navigation.compose.*
+import com.example.motivation.ui.*
 import com.example.motivation.ui.theme.MotivationTheme
 import com.example.motivation.viewmodel.PersonalizationViewModel
+import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 class MainActivity : ComponentActivity() {
@@ -68,33 +73,86 @@ class MainActivity : ComponentActivity() {
                 }
 
                 LaunchedEffect(userName) {
-                    if (userName == "") {
-                        navController.navigate("name_input") { popUpTo(0) }
-                    } else if (navController.currentBackStackEntry?.destination?.route == "name_input") {
+                    if (userName?.isNotBlank() == true && navController.currentBackStackEntry?.destination?.route == "name_input") {
                          navController.navigate("quotes") { popUpTo(0) }
                     }
                 }
 
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
+                val currentRoute = navBackStackEntry?.destination?.route
+                val isHomeScreen = currentRoute == "quotes" || currentRoute == "name_input" || currentRoute == "splash"
+
                 Scaffold(
                     modifier = Modifier.fillMaxSize(),
                     topBar = {
-                        if (userName?.isNotBlank() == true) {
-                            FocusTopAppBar(navController = navController)
+                        if (userName?.isNotBlank() == true && !isHomeScreen) {
+                            TopAppBar(
+                                title = {
+                                    Text(
+                                        text = getScreenTitle(currentRoute),
+                                        style = MaterialTheme.typography.headlineMedium.copy(
+                                            fontStyle = FontStyle.Italic
+                                        ),
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                },
+                                navigationIcon = {
+                                    IconButton(onClick = { navController.popBackStack() }) {
+                                        Icon(
+                                            imageVector = Icons.Default.ArrowBack,
+                                            contentDescription = "Back"
+                                        )
+                                    }
+                                },
+                                colors = TopAppBarDefaults.topAppBarColors(
+                                    containerColor = MaterialTheme.colorScheme.background,
+                                    titleContentColor = MaterialTheme.colorScheme.secondary,
+                                    navigationIconContentColor = MaterialTheme.colorScheme.secondary
+                                )
+                            )
                         }
                     }
                 ) { innerPadding ->
                     NavHost(
                         navController = navController,
-                        startDestination = "quotes",
-                        modifier = Modifier.padding(innerPadding)
+                        startDestination = "splash",
+                        modifier = Modifier.padding(innerPadding),
+                        enterTransition = {
+                            slideIntoContainer(
+                                AnimatedContentTransitionScope.SlideDirection.Left,
+                                animationSpec = tween(400)
+                            ) + fadeIn(animationSpec = tween(400))
+                        },
+                        exitTransition = {
+                            slideOutOfContainer(
+                                AnimatedContentTransitionScope.SlideDirection.Left,
+                                animationSpec = tween(400)
+                            ) + fadeOut(animationSpec = tween(400))
+                        },
+                        popEnterTransition = {
+                            slideIntoContainer(
+                                AnimatedContentTransitionScope.SlideDirection.Right,
+                                animationSpec = tween(400)
+                            ) + fadeIn(animationSpec = tween(400))
+                        },
+                        popExitTransition = {
+                            slideOutOfContainer(
+                                AnimatedContentTransitionScope.SlideDirection.Right,
+                                animationSpec = tween(400)
+                            ) + fadeOut(animationSpec = tween(400))
+                        }
                     ) {
-                        composable("quotes") { QuoteScreen() }
+                        composable("splash") { SplashScreen(navController, userName ?: "") }
+                        composable("quotes") { QuoteScreen(navController, userName ?: "") }
+                        composable("search") { SearchScreen() }
+                        composable("favorites") { FavoritesScreen() }
+                        composable("history") { HistoryScreen() }
+                        composable("journal") { JournalScreen() }
                         composable("name_input") { NameInputScreen(viewModel = personalizationViewModel, onNameSaved = { navController.navigate("quotes") { popUpTo(0) } }) }
                         composable("streak") { StreakScreen(onNavigateHome = { navController.navigate("quotes") { popUpTo("quotes") { inclusive = true } } }) }
                         composable("achievements") { AchievementsScreen(onNavigateHome = { navController.navigate("quotes") { popUpTo("quotes") { inclusive = true } } }) }
                         composable("settings") { SettingsScreen() }
-                        composable("name_affirmations") { NameAffirmationsScreen(personalizationViewModel, onNavigateHome = { navController.navigate("quotes") { popUpTo(0) } }) }
-                        composable("mirror_mode") { MirrorModeScreen(personalizationViewModel, onNavigateHome = { navController.navigate("quotes") { popUpTo(0) } }) }
+                        composable("mood") { MoodScreen() }
                     }
                 }
             }
@@ -112,26 +170,25 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun FocusTopAppBar(navController: NavController) {
-    TopAppBar(title = { Text(stringResource(id = R.string.app_name)) },
-        actions = {
-            IconButton(onClick = { navController.navigate("name_affirmations") }) {
-                Icon(painterResource(id = R.drawable.ic_affirmations), contentDescription = "Your Affirmations")
-            }
-            IconButton(onClick = { navController.navigate("mirror_mode") }) {
-                Icon(painterResource(id = R.drawable.ic_mirror_mode), contentDescription = "Mirror Mode")
-            }
-            IconButton(onClick = { navController.navigate("streak") }) {
-                Icon(painterResource(id = R.drawable.ic_streak), contentDescription = "Streak")
-            }
-            IconButton(onClick = { navController.navigate("achievements") }) {
-                Icon(painterResource(id = R.drawable.ic_achievements), contentDescription = "Achievements")
-            }
-            IconButton(onClick = { navController.navigate("settings") }) {
-                Icon(painterResource(id = R.drawable.ic_settings), contentDescription = "Settings")
-            }
-        }
-    )
+fun getGreeting(): String {
+    val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+    return when {
+        hour < 12 -> "Good morning"
+        hour < 17 -> "Good afternoon"
+        else -> "Good evening"
+    }
+}
+
+fun getScreenTitle(route: String?): String {
+    return when (route) {
+        "search" -> "Search"
+        "favorites" -> "Favorites"
+        "history" -> "History"
+        "journal" -> "Journal"
+        "streak" -> "Streak"
+        "achievements" -> "Achievements"
+        "settings" -> "Settings"
+        "mood" -> "Mood"
+        else -> ""
+    }
 }

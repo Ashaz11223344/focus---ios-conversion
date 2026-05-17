@@ -32,6 +32,9 @@ class SettingsDataStore(context: Context) {
     private val weekStartDateKey = longPreferencesKey("week_start_date")
     private val unlockedAchievementsKey = stringSetPreferencesKey("unlocked_achievements")
     private val userNameKey = stringPreferencesKey("user_name")
+    private val quietHoursEnabledKey = booleanPreferencesKey("quiet_hours_enabled")
+    private val quietHoursStartKey = intPreferencesKey("quiet_hours_start")
+    private val quietHoursEndKey = intPreferencesKey("quiet_hours_end")
 
     // --- Flows for observing data ---
     val selectedCategories: Flow<Set<String>> = dataStore.data.map { it[selectedCategoriesKey] ?: emptySet() }
@@ -46,10 +49,24 @@ class SettingsDataStore(context: Context) {
     val weekStartDate: Flow<Long> = dataStore.data.map { it[weekStartDateKey] ?: 0L }
     val unlockedAchievements: Flow<Set<String>> = dataStore.data.map { it[unlockedAchievementsKey] ?: emptySet() }
     val userName: Flow<String> = dataStore.data.map { it[userNameKey] ?: "" }
+    val quietHoursEnabled: Flow<Boolean> = dataStore.data.map { it[quietHoursEnabledKey] ?: false }
+    val quietHoursStart: Flow<Int> = dataStore.data.map { it[quietHoursStartKey] ?: 1320 } // 10 PM
+    val quietHoursEnd: Flow<Int> = dataStore.data.map { it[quietHoursEndKey] ?: 240 }    // 4 AM
 
     // --- Methods for updating data ---
     suspend fun setUserName(name: String) {
         dataStore.edit { it[userNameKey] = name }
+    }
+
+    suspend fun setQuietHoursEnabled(enabled: Boolean) {
+        dataStore.edit { it[quietHoursEnabledKey] = enabled }
+    }
+
+    suspend fun setQuietHoursTime(startMinutes: Int, endMinutes: Int) {
+        dataStore.edit {
+            it[quietHoursStartKey] = startMinutes
+            it[quietHoursEndKey] = endMinutes
+        }
     }
 
     suspend fun setNotificationContentType(type: String) {
