@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/widget_background"
-    android:padding="22dp">
+    android:padding="16dp">
 
     <!-- Quote Mark Icon (Opening) -->
     <TextView
@@ -16,7 +16,7 @@
         android:fontFamily="@font/literata_bold"
         android:text="“"
         android:textColor="#FC6E20"
-        android:textSize="36sp"
+        android:textSize="32sp"
         android:textStyle="bold"
         android:includeFontPadding="false"
         android:lineSpacingExtra="0dp" />
@@ -32,7 +32,7 @@
         android:fontFamily="@font/literata_bold"
         android:text="Motivation"
         android:textColor="#FC6E20"
-        android:textSize="12sp"
+        android:textSize="11sp"
         android:textStyle="bold"
         android:textAllCaps="true"
         android:letterSpacing="0.1" />
@@ -44,18 +44,18 @@
         android:layout_height="match_parent"
         android:layout_below="@id/widget_quote_mark_open"
         android:layout_above="@id/widget_quote_mark_close"
-        android:layout_marginTop="6dp"
-        android:layout_marginBottom="6dp"
-        android:layout_marginStart="12dp"
-        android:layout_marginEnd="12dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
         android:fontFamily="@font/literata_italic"
         android:gravity="center"
         android:ellipsize="end"
-        android:maxLines="5"
+        android:maxLines="4"
         android:text="The only way to do great work is to love what you do. Keep pushing forward."
         android:textColor="#FFE7D0"
-        android:textSize="17sp"
-        android:lineSpacingMultiplier="1.25" />
+        android:textSize="16sp"
+        android:lineSpacingMultiplier="1.2" />
 
     <!-- Quote Mark Icon (Closing) -->
     <TextView
@@ -67,7 +67,7 @@
         android:fontFamily="@font/literata_bold"
         android:text="”"
         android:textColor="#FC6E20"
-        android:textSize="36sp"
+        android:textSize="32sp"
         android:textStyle="bold"
         android:includeFontPadding="false"
         android:lineSpacingExtra="0dp" />
