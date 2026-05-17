@@ -157,16 +157,6 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
         val appWidgetManager = android.appwidget.AppWidgetManager.getInstance(context)
 
-        // Small Widget Broadcast
-        val smallIntent = android.content.Intent(context, com.example.motivation.widget.QuotesSmallWidgetProvider::class.java).apply {
-            action = android.appwidget.AppWidgetManager.ACTION_APPWIDGET_UPDATE
-        }
-        val smallIds = appWidgetManager.getAppWidgetIds(
-            android.content.ComponentName(context, com.example.motivation.widget.QuotesSmallWidgetProvider::class.java)
-        )
-        smallIntent.putExtra(android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_IDS, smallIds)
-        context.sendBroadcast(smallIntent)
-
         // Medium Widget Broadcast
         val mediumIntent = android.content.Intent(context, com.example.motivation.widget.QuotesMediumWidgetProvider::class.java).apply {
             action = android.appwidget.AppWidgetManager.ACTION_APPWIDGET_UPDATE

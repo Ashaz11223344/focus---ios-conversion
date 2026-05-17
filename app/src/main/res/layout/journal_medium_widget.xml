@@ -36,11 +36,12 @@
             android:textColor="#9E9E9E"
             android:textSize="11sp" />
             
-        <View
+        <ImageView
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_below="@id/widget_journal_title"
             android:layout_marginTop="8dp"
+            android:src="@android:color/transparent"
             android:background="#323232" />
     </RelativeLayout>
 

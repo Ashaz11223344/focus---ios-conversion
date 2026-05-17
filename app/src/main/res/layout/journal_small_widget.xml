@@ -27,11 +27,12 @@
             android:textStyle="bold"
             android:letterSpacing="0.1" />
 
-        <View
+        <ImageView
             android:layout_width="0dp"
             android:layout_height="1dp"
             android:layout_weight="1"
             android:layout_marginStart="8dp"
+            android:src="@android:color/transparent"
             android:background="#323232" />
     </LinearLayout>
 
