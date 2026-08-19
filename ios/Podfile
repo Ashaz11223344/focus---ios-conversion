@@ -1,0 +1,8 @@
+platform :ios, '14.0'
+
+target 'Focus' do
+  use_frameworks!
+
+  # KMP shared framework (automatically generated)
+  # pod 'shared', :path => '../shared/build/XCFrameworks/shared/release/shared.podspec'
+end

@@ -1,5 +1,5 @@
 import SwiftUI
-import SharedFocus
+import shared
 
 @main
 struct FocusApp: App {

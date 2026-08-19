@@ -1,5 +1,5 @@
 import SwiftUI
-import SharedFocus
+import shared
 
 struct ContentView: View {
     @State private var selectedTab = 0
