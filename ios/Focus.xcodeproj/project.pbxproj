@@ -9,7 +9,6 @@
 /* Begin PBXBuildFile section */
 		1A0001 /* FocusApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0002 /* FocusApp.swift */; };
 		1A0003 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A0004 /* ContentView.swift */; };
-		1A0005 /* Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 1A0006 /* Info.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -116,7 +115,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1A0005 /* Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
