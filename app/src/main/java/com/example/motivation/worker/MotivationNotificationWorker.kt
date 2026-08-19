@@ -1,313 +1,46 @@
 package com.example.motivation.worker
 
 import android.content.Context
+import android.util.Log
 import androidx.work.CoroutineWorker
+import androidx.work.WorkManager
 import androidx.work.WorkerParameters
-import com.example.motivation.data.QuoteRepository
-import com.example.motivation.data.SettingsDataStore
-import com.example.motivation.helper.NotificationHelper
-import kotlinx.coroutines.flow.first
-import java.util.Calendar
 
+/**
+ * LEGACY WORKER — This worker is no longer used for scheduling quote notifications.
+ * Quote notifications are now managed exclusively via AlarmManager + QuoteNotificationReceiver.
+ *
+ * This class is kept ONLY as a self-destruct guard: if a zombie instance of this worker
+ * fires from WorkManager's internal database (e.g. restored from cloud backup), it will:
+ * 1. Log a warning
+ * 2. Cancel itself permanently
+ * 3. Return success WITHOUT showing any notification
+ */
 class MotivationNotificationWorker(
     appContext: Context,
     workerParams: WorkerParameters
 ) : CoroutineWorker(appContext, workerParams) {
 
     override suspend fun doWork(): Result {
-        val settingsDataStore = SettingsDataStore(applicationContext)
-        
-        // --- Quiet Hours Check ---
-        if (settingsDataStore.quietHoursEnabled.first()) {
-            val start = settingsDataStore.quietHoursStart.first()
-            val end = settingsDataStore.quietHoursEnd.first()
-            val now = Calendar.getInstance()
-            val currentMinutes = now.get(Calendar.HOUR_OF_DAY) * 60 + now.get(Calendar.MINUTE)
-            
-            val isInQuietHours = if (start < end) {
-                currentMinutes in start..end
-            } else {
-                currentMinutes >= start || currentMinutes <= end
-            }
-            
-            if (isInQuietHours) {
-                return Result.success() // Skip notification during quiet hours
-            }
-        }
-
-        val contentType = settingsDataStore.notificationContentType.first()
-
-        val dayOfYear = Calendar.getInstance().get(Calendar.DAY_OF_YEAR)
-        val title: String
-        val content: String
-        val destination: String
-
-        if (contentType == "Affirmation") {
-            val userName = settingsDataStore.userName.first()
-            if (userName.isBlank()) return Result.failure()
-
-            title = "Your Daily Quote"
-            content = getTodaysAffirmation(userName, dayOfYear)
-            destination = "name_affirmations"
-
-        } else { // "Quote"
-            QuoteRepository.initialize(applicationContext)
-            val quote = QuoteRepository.getRandomQuote()
-
-            title = "Your Daily Quote"
-            content = quote.text
-            destination = "quotes"
-        }
-
-        NotificationHelper(applicationContext).showNotification(title, content, destination)
-        return Result.success()
-    }
-
-    private fun getTodaysAffirmation(name: String, dayOfYear: Int): String {
-        val affirmations = listOf(
-            "$name is disciplined.",
-            "$name finishes what he starts.",
-            "$name doesn't need motivation, he has habits.",
-            "$name shows up consistently.",
-            "$name builds his future daily.",
-            "$name's focus is razor sharp.",
-            "$name turns plans into action.",
-            "$name embraces productive discomfort.",
-            "$name values progress over perfection.",
-            "$name masters his time completely.",
-            "$name's discipline equals his freedom.",
-            "$name controls his attention fully.",
-            "$name's hustle has purpose.",
-            "$name acts despite his feelings.",
-            "$name prioritizes what truly matters.",
-            "$name builds momentum through action.",
-            "$name's consistency creates mastery.",
-            "$name operates at peak performance.",
-            "$name converts time into achievements.",
-            "$name chooses courage over comfort.",
-            "$name's potential is truly limitless.",
-            "$name attracts positive energy daily.",
-            "$name embraces his personal power.",
-            "$name's mind is clear today.",
-            "$name turns obstacles into opportunities.",
-            "$name trusts his journey completely.",
-            "$name's energy creates his results.",
-            "$name is unstoppable when focused.",
-            "$name cultivates powerful habits daily.",
-            "$name's determination knows no limits.",
-            "$name breathes in fresh motivation.",
-            "$name designs his perfect day.",
-            "$name's willpower grows stronger daily.",
-            "$name commits to his goals.",
-            "$name's actions match his ambitions.",
-            "$name creates his own luck.",
-            "$name exceeds his own expectations.",
-            "$name is focused and disciplined.",
-            "$name's productivity fuels his purpose.",
-            "$name overcomes procrastination with action.",
-            "$name's work ethic inspires others.",
-            "$name finishes with excellence.",
-            "$name invests in his growth.",
-            "$name's excellence is his standard.",
-            "$name's passion drives his performance.",
-            "$name takes charge right now.",
-            "$name builds momentum every day.",
-            "$name's discipline equals freedom.",
-            "$name is a problem solver.",
-            "$name creates before he consumes.",
-            "$name maximizes every single moment.",
-            "$name replaces doubt with determination.",
-            "$name's work expresses his values.",
-            "$name is resilient and resourceful.",
-            "$name's progress excites and motivates.",
-            "$name is in control today.",
-            "$name's effort compounds over time.",
-            "$name embraces necessary hard work.",
-            "$name's focus cannot be broken.",
-            "$name shows up consistently powerfully.",
-            "$name chooses growth over comfort.",
-            "$name attracts productive energy today.",
-            "$name's each task brings closer.",
-            "$name is a momentum builder.",
-            "$name's discipline shapes his destiny.",
-            "$name acts despite how he feels.",
-            "$name's work ethic is legendary.",
-            "$name focuses on the process.",
-            "$name breaks his personal records.",
-            "$name builds his dream daily.",
-            "$name's consistency creates spectacular results.",
-            "$name is becoming his best self.",
-            "$name's action is his antidote.",
-            "$name is powerfully self-motivated.",
-            "$name's goals demand his attention.",
-            "$name honors his commitments today.",
-            "$name's productivity flows through easily.",
-            "$name turns intention into action.",
-            "$name's habits support his dreams.",
-            "$name takes massive action now.",
-            "$name's every effort moves forward.",
-            "$name is the driver here.",
-            "$name thrives under healthy pressure.",
-            "$name chooses powerful action today.",
-            "$name completes tasks with excellence.",
-            "$name's mindset attracts productive opportunities.",
-            "$name is a high-performance individual.",
-            "$name's work today matters immensely.",
-            "$name embraces the grind joyfully.",
-            "$name's results follow consistent effort.",
-            "$name is fiercely self-disciplined.",
-            "$name builds his legacy today.",
-            "$name's energy is focused productive.",
-            "$name prioritizes execution over perfection.",
-            "$name makes progress each hour.",
-            "$name controls his focus completely.",
-            "$name's determination overcomes all obstacles.",
-            "$name is a productive force.",
-            "$name creates meaningful value today.",
-            "$name's discipline is his superpower.",
-            "$name acts with urgency today.",
-            "$name's potential unfolds through work.",
-            "$name converts ideas into reality.",
-            "$name maximizes his potential today.",
-            "$name is relentlessly action oriented.",
-            "$name's productivity inspires everyone around.",
-            "$name breaks through mental barriers.",
-            "$name's consistent action brings results.",
-            "$name designs his productive environment.",
-            "$name's focus brings financial freedom.",
-            "$name shows up when tired.",
-            "$name's every task teaches something.",
-            "$name builds his skills daily.",
-            "$name's work has deep purpose.",
-            "$name honors his time completely.",
-            "$name's procrastination has no power.",
-            "$name chooses productive thoughts daily.",
-            "$name's actions create his future.",
-            "$name is an unstoppable achiever.",
-            "$name outworks his doubts today.",
-            "$name's willpower strengthens with use.",
-            "$name attracts success through persistence.",
-            "$name's productivity is his path.",
-            "$name builds empires with consistency.",
-            "$name's focus attracts abundant opportunities.",
-            "$name embraces challenging meaningful work.",
-            "$name's completed task energizes him.",
-            "$name is a productivity magnet.",
-            "$name's effort today builds tomorrow.",
-            "$name transforms pressure into performance.",
-            "$name's clarity precedes productive action.",
-            "$name is intrinsically motivated always.",
-            "$name's hustle creates his happiness.",
-            "$name turns dreams into plans.",
-            "$name's action is his language.",
-            "$name is a focused executor.",
-            "$name's discipline creates beautiful freedom.",
-            "$name chooses work over distraction.",
-            "$name's every moment is opportunity.",
-            "$name builds wealth through work.",
-            "$name's persistence breaks all resistance.",
-            "$name masters his time daily.",
-            "$name's productivity is competitive advantage.",
-            "$name is a relentless implementer.",
-            "$name's actions speak his intentions.",
-            "$name finishes strong every day.",
-            "$name's consistency is secret weapon.",
-            "$name operates at peak always.",
-            "$name's work transforms his world.",
-            "$name attracts productive collaborations today.",
-            "$name's discipline makes everything easier.",
-            "$name is a proactive creator.",
-            "$name's focus unlocks hidden potentials.",
-            "$name values progress over perfection.",
-            "$name's each action builds confidence.",
-            "$name converts time into achievements.",
-            "$name's productivity is non-negotiable.",
-            "$name embraces the work required.",
-            "$name's success is daily habit.",
-            "$name is a momentum machine.",
-            "$name's effort compounds magnificently.",
-            "$name chooses powerful productive habits.",
-            "$name builds his dream today.",
-            "$name is a disciplined visionary.",
-            "$name's work ethic opens doors.",
-            "$name focuses on true impact.",
-            "$name's productivity flows from purpose.",
-            "$name takes ownership completely.",
-            "$name's actions create massive value.",
-            "$name is a productive powerhouse.",
-            "$name gets better every day.",
-            "$name builds his focus muscle.",
-            "$name's consistency creates true mastery.",
-            "$name chooses work that matters.",
-            "$name creates exceptional work today.",
-            "$name is a focused builder.",
-            "$name's discipline shapes his character.",
-            "$name overcomes all resistance today.",
-            "$name's productivity is natural rhythm.",
-            "$name attracts wealth through work.",
-            "$name's effort inspires his family.",
-            "$name turns plans into reality.",
-            "$name breaks through limits today.",
-            "$name is a consistent performer.",
-            "$name's focus creates financial abundance.",
-            "$name embraces productive discomfort daily.",
-            "$name's action is his meditation.",
-            "$name builds his future now.",
-            "$name's work changes lives positively.",
-            "$name chooses discipline every day.",
-            "$name's every task has purpose.",
-            "$name is a productive leader.",
-            "$name's consistency builds unstoppable momentum.",
-            "$name focuses on pure execution.",
-            "$name creates massive value today.",
-            "$name is a results machine.",
-            "$name's effort never goes wasted.",
-            "$name builds with focused intensity.",
-            "$name's productivity is love language.",
-            "$name attracts success through work.",
-            "$name's discipline creates time freedom.",
-            "$name chooses meaningful action always.",
-            "$name makes progress every hour.",
-            "$name is a focused achiever.",
-            "$name's work builds his legacy.",
-            "$name embraces the necessary grind.",
-            "$name's action cures all fear.",
-            "$name builds wealth each day.",
-            "$name's focus attracts great success.",
-            "$name chooses productive thoughts always.",
-            "$name exceeds all expectations today.",
-            "$name is a disciplined executor.",
-            "$name's consistency creates golden opportunities.",
-            "$name focuses on value creation.",
-            "$name's productivity is his superpower.",
-            "$name attracts abundance through action.",
-            "$name's effort builds his future.",
-            "$name turns goals into reality.",
-            "$name breaks records every day.",
-            "$name is a focused creator.",
-            "$name's discipline equals true freedom.",
-            "$name embraces hard work daily.",
-            "$name's action builds his confidence.",
-            "$name builds his empire steadily.",
-            "$name's focus creates daily miracles.",
-            "$name chooses work over entertainment.",
-            "$name's every task moves forward.",
-            "$name is a productive force.",
-            "$name's consistency is truly legendary.",
-            "$name focuses on steady progress.",
-            "$name creates excellence every day.",
-            "$name is a disciplined builder.",
-            "$name's work changes everything positively.",
-            "$name attracts success consistently always.",
-            "$name's effort inspires many others.",
-            "$name turns dreams into action.",
-            "$name builds greatness every day.",
-            "$name is a focused winner.",
-            "$name's discipline creates true abundance.",
-            "$name embraces productive challenges daily.",
-            "$name's action is his identity.",
-            "$name builds his dreams steadily."
+        Log.w(
+            "MotivationNotifWorker",
+            "[ZOMBIE] MotivationNotificationWorker fired unexpectedly! " +
+            "This is a legacy worker that should have been cancelled. " +
+            "ID=${id}, runAttemptCount=$runAttemptCount. " +
+            "Suppressing notification and self-destructing."
         )
-        return affirmations[dayOfYear % affirmations.size]
+
+        // Attempt to cancel this worker permanently so it never fires again
+        try {
+            val workManager = WorkManager.getInstance(applicationContext)
+            workManager.cancelUniqueWork("MotivationNotificationWork")
+            workManager.cancelWorkById(id)
+            Log.w("MotivationNotifWorker", "[ZOMBIE] Self-destruct complete. Worker cancelled by ID and name.")
+        } catch (e: Exception) {
+            Log.e("MotivationNotifWorker", "[ZOMBIE] Failed to self-destruct: ${e.message}")
+        }
+
+        // Return success WITHOUT showing any notification — kills the phantom
+        return Result.success()
     }
 }

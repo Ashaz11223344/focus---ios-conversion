@@ -4,4 +4,80 @@
     <string name="quotes_medium_description">Displays your full focus quote with styling (Medium).</string>
     <string name="journal_small_description">Displays your latest journal entry preview (Small).</string>
     <string name="journal_medium_description">Displays your full latest journal entry (Medium).</string>
+
+    <!-- Focus Guard -->
+    <string name="fg_title">Focus Guard</string>
+    <string name="fg_notification_silencer">Notification Silencer</string>
+    <string name="fg_app_blocker">App Blocker</string>
+    <string name="fg_no_schedules">No schedules set yet. Tap + to add one.</string>
+    <string name="fg_no_rules">No apps blocked yet. Tap + to block one.</string>
+    <string name="fg_permission_needed_title">One-time permission needed</string>
+    <string name="fg_dnd_permission_body">To silence notifications, Focus needs Do Not Disturb access.\nWe\'ll take you to your phone settings — just tap Focus and enable it.</string>
+    <string name="fg_usage_permission_body">To block apps, Focus needs Usage Stats access.\nWe\'ll take you to your phone settings — just tap Focus and enable it.</string>
+    <string name="fg_open_settings">Open Settings</string>
+    <string name="fg_cancel">Cancel</string>
+    <string name="fg_dnd_needed_title">Do Not Disturb Access Needed</string>
+    <string name="fg_dnd_needed_desc">To automatically silence phone notifications during scheduled hours, Focus needs access to your device\'s Notification Policy settings.</string>
+    <string name="fg_usage_needed_title">Usage Access Needed</string>
+    <string name="fg_usage_needed_desc">To detect when blocked apps are opened and intercept them, Focus needs Usage Stats Access to check which app is in the foreground.</string>
+    <string name="fg_grant_access">Grant Access</string>
+    
+    <string name="fg_service_active">Focus Guard is active</string>
+    <string name="fg_service_desc">Monitoring app block rules</string>
+    <string name="fg_app_blocked">App Blocked</string>
+    <string name="fg_blocked_until">%1$s is blocked until %2$s</string>
+    <string name="fg_block_quote">“Stay focused. You set this boundary for a reason.”</string>
+    <string name="fg_go_back">Go Back to Focus</string>
+    <string name="fg_override">Allow for 5 minutes</string>
+    <string name="fg_reblocking">Re-blocking in %1$d:%2$02d...</string>
+    <string name="fg_consent_title">App Blocker Consent</string>
+    <string name="fg_consent_body">To help you stay focused, Focus Guard will monitor which app is in the foreground and intercept distracting ones on your schedule. This requires Usage Stats and Overlay permissions. Your app usage data is processed entirely on your device and is never uploaded or shared.</string>
+    <string name="fg_consent_agree">Agree</string>
+    <string name="fg_consent_disagree">Disagree</string>
+    <string name="fg_consent_needed_title">Consent Required</string>
+    <string name="fg_consent_needed_desc">To use the App Blocker, Focus needs your consent to monitor foreground apps on your schedule.</string>
+    <string name="fg_review_consent">Review Consent</string>
+    
+    <string name="fg_add_dnd_schedule">Add DND Schedule</string>
+    <string name="fg_edit_dnd_schedule">Edit DND Schedule</string>
+    <string name="fg_label">Label</string>
+    <string name="fg_start_time">Start Time</string>
+    <string name="fg_end_time">End Time</string>
+    <string name="fg_active_days">Active Days</string>
+    <string name="fg_save">Save</string>
+    
+    <string name="fg_select_app">Select App to Block</string>
+    <string name="fg_search_apps">Search apps...</string>
+    <string name="fg_block_app_title">Block %1$s</string>
+    <string name="fg_edit_block_title">Edit Block: %1$s</string>
+    <string name="fg_block_desc">Configure block times and active days.</string>
+    <string name="fg_block_app">Block App</string>
+    <string name="fg_save_changes">Save Changes</string>
+    
+    <string name="fg_schedule_quiet_hours">Schedule quiet hours automatically</string>
+    <string name="fg_lock_distracting_apps">Lock distracting apps on your schedule</string>
+    
+    <string name="fg_onboard_title">Take back your time.</string>
+    <string name="fg_onboard_desc">Focus Guard silences distractions and locks apps — on your schedule, automatically.</string>
+    <string name="fg_onboard_silence_title">Silence Notifications</string>
+    <string name="fg_onboard_silence_desc">Schedule quiet hours</string>
+    <string name="fg_onboard_block_title">Block Apps</string>
+    <string name="fg_onboard_block_desc">Lock distracting apps</string>
+    <string name="fg_onboard_quote">“The key is not to prioritize what\'s on your schedule, but to schedule your priorities.”</string>
+    <string name="fg_onboard_lets_go">Let\'s Go →</string>
+    <string name="fg_onboard_skip">Skip</string>
+    
+    <string name="fg_onboard_mock_app">Instagram</string>
+    <string name="fg_onboard_mock_blocked">Blocked until 6:00 PM</string>
+    <string name="fg_dnd_label_placeholder">e.g. Morning Focus</string>
+    <string name="fg_dnd_default_label">DND Schedule</string>
+    <string name="fg_overlay_needed_title">Overlay Permission Needed</string>
+    <string name="fg_overlay_needed_desc">To show the block screen over distracting apps, Focus needs permission to display over other apps.</string>
+    <string name="fg_overlay_permission_body">To block apps with an overlay, Focus needs Overlay access.\nWe\'ll take you to your phone settings — just tap Focus and enable \"Allow display over other apps\".</string>
+
+    <!-- Achievements Onboarding -->
+    <string name="ob_achievements_title">Wear Your Consistency</string>
+    <string name="ob_achievements_desc">Earn rare badges by completing focus milestones, writing journals, or logging moods. Your highest tier unlocked badge dynamically highlights your profile avatar.</string>
+    <string name="ob_achievements_sub">100% offline. Achievement progress calculated entirely inside local database (achievements table).</string>
+    <string name="ob_achievements_next">Next →</string>
 </resources>

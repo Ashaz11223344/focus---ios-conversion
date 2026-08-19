@@ -26,6 +26,7 @@ object QuoteRepository {
         return words.any { it in ENGLISH_COMMON_WORDS }
     }
 
+    @Synchronized
     fun initialize(context: android.content.Context) {
         if (isInitialized) return
         try {
@@ -50,6 +51,18 @@ object QuoteRepository {
                 Quote("The best way to predict the future is to create it.", "Motivation")
             )
         }
+    }
+
+    fun getAllQuotes(): List<Quote> {
+        return quotes
+    }
+
+    fun getCategories(): List<String> {
+        return quotes.map { it.category.trim() }
+            .filter { it.isNotEmpty() }
+            .map { it.lowercase(java.util.Locale.ROOT).replaceFirstChar { char -> char.titlecase(java.util.Locale.ROOT) } }
+            .distinct()
+            .sorted()
     }
 
     fun getRandomQuote(): Quote {

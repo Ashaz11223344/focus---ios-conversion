@@ -1,18 +1,40 @@
 *.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
+.gradle/
+.idea/
 .DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+build/
+**/build/
+captures/
+.externalNativeBuild/
+.cxx/
 local.properties
 .vscode/
 temporary-new-quote-store/
-/logo.png
+
+# Keystores & Binaries
+*.keystore
+*.jks
+*.apk
+*.aab
+*.ipa
+*.mp4
+
+# Top-level scratch / dumps / screenshots
+/*.py
+/*.txt
+/*.xml
+/*.png
+/*.jpg
+$null
+.agents/
+skills-lock.json
+brag-output/
+webapp/
+quote_converter/
+md files/
+Focus_Tester_Guide.html
+AUDIT_REPORT.md
+
+# iOS Build artifacts
+ios/build/
+ios/**/DerivedData/

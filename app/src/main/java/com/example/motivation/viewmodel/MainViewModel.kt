@@ -28,13 +28,40 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             repo = MotivationRepository(database.motivationDao())
             android.util.Log.d("MainViewModel", "Database Initialized Successfully")
             
-            QuoteRepository.initialize(application)
-            refreshQuote()
+            // Load saved quote immediately from SharedPreferences (fast, no disk parse)
+            val prefs = application.getSharedPreferences("widget_data", android.content.Context.MODE_PRIVATE)
+            val savedText = prefs.getString("current_quote_text", null)
+            val savedCategory = prefs.getString("current_quote_category", null)
+            if (savedText != null && savedCategory != null) {
+                _quote.value = Quote(savedText, savedCategory)
+            }
+
+            // Move heavy JSON parsing + regex filtering to background IO thread
+            viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                QuoteRepository.initialize(application)
+                // If no saved quote was found, refresh from loaded repository
+                if (savedText == null || savedCategory == null) {
+                    kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main) {
+                        refreshQuote()
+                    }
+                }
+            }
+
+            // One-time cleanup of legacy duplicate mood entries
+            viewModelScope.launch {
+                try {
+                    database.motivationDao().deleteDuplicateMoods()
+                    android.util.Log.d("MainViewModel", "Legacy duplicate moods cleaned up successfully")
+                } catch (e: Exception) {
+                    android.util.Log.e("MainViewModel", "Failed to clean up duplicate moods", e)
+                }
+            }
         } catch (e: Exception) {
             android.util.Log.e("MainViewModel", "Failed to initialize Database or Repository", e)
         }
         repository = repo
     }
+
 
     private val _searchResults = MutableStateFlow<List<Quote>>(emptyList())
     val searchResults: StateFlow<List<Quote>> = _searchResults.asStateFlow()
@@ -49,15 +76,31 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         ?: MutableStateFlow(emptyList())
 
     val history: StateFlow<List<Quote>> = repository?.recentHistory
-        ?.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+        ?.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
         ?: MutableStateFlow(emptyList())
+
+    private fun deduplicateMoodsByDate(entries: List<MoodEntry>): List<MoodEntry> {
+        return entries.groupBy { entry ->
+            val cal = Calendar.getInstance().apply { timeInMillis = entry.timestamp }
+            "${cal.get(Calendar.YEAR)}-${cal.get(Calendar.MONTH)}-${cal.get(Calendar.DAY_OF_MONTH)}"
+        }.mapValues { (_, dayEntries) ->
+            dayEntries.maxByOrNull { it.timestamp }!!
+        }.values.toList()
+    }
 
     val moodEntries: StateFlow<List<MoodEntry>> = repository?.allMoodEntries
         ?.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
         ?: MutableStateFlow(emptyList())
 
+    val todayMoodEntry: StateFlow<MoodEntry?> = moodEntries.map { entries ->
+        val todayStart = getStartOfDayLocal()
+        val todayEnd = getEndOfDayLocal()
+        entries.firstOrNull { it.timestamp in todayStart..todayEnd }
+    }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
+
     // Mood Analytics
-    val monthlyMoodStats: StateFlow<MoodStats?> = moodEntries.map { entries ->
+    val monthlyMoodStats: StateFlow<MoodStats?> = moodEntries.map { rawEntries ->
+        val entries = deduplicateMoodsByDate(rawEntries)
         if (entries.isEmpty()) return@map null
         
         val now = Calendar.getInstance()
@@ -82,7 +125,33 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         )
     }.stateIn(viewModelScope, SharingStarted.Lazily, null)
 
+    private var historyIndex = 0
+
+    fun showNextQuote() {
+        val currentHistory = history.value
+        if (historyIndex > 0 && historyIndex - 1 < currentHistory.size) {
+            historyIndex--
+            val nextQuote = currentHistory[historyIndex]
+            _quote.value = nextQuote
+            updateQuotesWidgets(nextQuote.text, nextQuote.category)
+        } else {
+            historyIndex = 0
+            refreshQuote()
+        }
+    }
+
+    fun showPreviousQuote() {
+        val currentHistory = history.value
+        if (historyIndex + 1 < currentHistory.size) {
+            historyIndex++
+            val prevQuote = currentHistory[historyIndex]
+            _quote.value = prevQuote
+            updateQuotesWidgets(prevQuote.text, prevQuote.category)
+        }
+    }
+
     fun refreshQuote() {
+        historyIndex = 0
         val nextQuote = QuoteRepository.getRandomQuote()
         _quote.value = nextQuote
         viewModelScope.launch {
@@ -91,7 +160,18 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         updateQuotesWidgets(nextQuote.text, nextQuote.category)
     }
 
+    fun setQuote(text: String, category: String) {
+        historyIndex = 0
+        val nextQuote = Quote(text, category)
+        _quote.value = nextQuote
+        viewModelScope.launch {
+            repository?.addToHistory(nextQuote)
+        }
+        updateQuotesWidgets(nextQuote.text, nextQuote.category)
+    }
+
     fun refreshQuoteByCategory(category: String) {
+        historyIndex = 0
         val nextQuote = QuoteRepository.getRandomQuoteByCategory(category)
         _quote.value = nextQuote
         viewModelScope.launch {
@@ -100,8 +180,50 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         updateQuotesWidgets(nextQuote.text, nextQuote.category)
     }
 
-    fun search(query: String) {
-        _searchResults.value = QuoteRepository.searchQuotes(query)
+    fun clearHistory() {
+        viewModelScope.launch {
+            repository?.clearHistory()
+        }
+    }
+
+    val categories: List<String> = listOf("All") + QuoteRepository.getCategories()
+
+    private val _searchSuggestions = MutableStateFlow<List<Quote>>(emptyList())
+    val searchSuggestions: StateFlow<List<Quote>> = _searchSuggestions.asStateFlow()
+
+    private val suggestedQuotesHistory = mutableSetOf<String>()
+
+    fun generateSuggestions(category: String, limit: Int = 5) {
+        val filteredQuotes = if (category.equals("All", ignoreCase = true) || category.isBlank()) {
+            QuoteRepository.getAllQuotes()
+        } else {
+            QuoteRepository.getQuotesByCategory(category)
+        }
+
+        var available = filteredQuotes.filter { it.text !in suggestedQuotesHistory }
+
+        if (available.size < limit && filteredQuotes.isNotEmpty()) {
+            val textsToRemove = filteredQuotes.map { it.text }.toSet()
+            suggestedQuotesHistory.removeAll(textsToRemove)
+            available = filteredQuotes
+        }
+
+        val selected = available.shuffled().take(limit)
+        suggestedQuotesHistory.addAll(selected.map { it.text })
+        _searchSuggestions.value = selected
+    }
+
+    fun search(query: String, category: String = "All") {
+        if (query.isBlank()) {
+            _searchResults.value = emptyList()
+            return
+        }
+        val rawResults = QuoteRepository.searchQuotes(query)
+        _searchResults.value = if (category.equals("All", ignoreCase = true)) {
+            rawResults
+        } else {
+            rawResults.filter { it.category.equals(category, ignoreCase = true) }
+        }
     }
 
     fun toggleFavorite(quote: Quote) {
@@ -122,29 +244,69 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         viewModelScope.launch {
             repository?.insertJournalEntry(content, dateDisplay)
             updateJournalWidgets()
+            com.example.motivation.data.AchievementRepository(getApplication()).checkAchievements()
         }
     }
 
-    fun addMoodEntry(name: String, emoji: String, value: Int) {
+    fun deleteJournalEntry(entry: JournalEntry) {
         viewModelScope.launch {
-            val latest = moodEntries.value.firstOrNull()
-            val today = System.currentTimeMillis()
-            
-            val idToUse = if (latest != null && isSameDay(latest.timestamp, today)) {
-                latest.id
-            } else {
-                0
-            }
-            
-            repository?.insertMoodEntry(name, emoji, value, idToUse)
+            repository?.deleteJournalEntry(entry)
+            updateJournalWidgets()
+            com.example.motivation.data.AchievementRepository(getApplication()).checkAchievements()
         }
     }
 
-    private fun isSameDay(time1: Long, time2: Long): Boolean {
-        val cal1 = Calendar.getInstance().apply { timeInMillis = time1 }
-        val cal2 = Calendar.getInstance().apply { timeInMillis = time2 }
-        return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
-               cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR)
+    fun reinsertJournalEntry(entry: JournalEntry) {
+        viewModelScope.launch {
+            repository?.insertJournalEntryDirect(entry)
+            updateJournalWidgets()
+            com.example.motivation.data.AchievementRepository(getApplication()).checkAchievements()
+        }
+    }
+
+    fun updateJournalEntry(entry: JournalEntry) {
+        viewModelScope.launch {
+            repository?.updateJournalEntry(entry)
+            updateJournalWidgets()
+        }
+    }
+
+    fun addMoodEntry(name: String, emoji: String, value: Int, onComplete: (isUpdate: Boolean) -> Unit) {
+        viewModelScope.launch {
+            val startOfDay = getStartOfDayLocal()
+            val endOfDay = getEndOfDayLocal()
+            
+            val existing = repository?.getMoodEntryForDayRange(startOfDay, endOfDay)
+            val isUpdate = existing != null
+            val idToUse = existing?.id ?: 0
+            
+            repository?.insertMoodEntry(
+                name = name,
+                emoji = emoji,
+                value = value,
+                id = idToUse
+            )
+            com.example.motivation.data.AchievementRepository(getApplication()).checkAchievements()
+            onComplete(isUpdate)
+        }
+    }
+
+    private fun getStartOfDayLocal(): Long {
+        val cal = Calendar.getInstance()
+        cal.set(Calendar.HOUR_OF_DAY, 0)
+        cal.set(Calendar.MINUTE, 0)
+        cal.set(Calendar.SECOND, 0)
+        cal.set(Calendar.MILLISECOND, 0)
+        return cal.timeInMillis
+    }
+
+    private fun getEndOfDayLocal(): Long {
+        val cal = Calendar.getInstance()
+        cal.set(Calendar.HOUR_OF_DAY, 23)
+        cal.set(Calendar.MINUTE, 59)
+        cal.set(Calendar.SECOND, 59)
+        cal.set(Calendar.MILLISECOND, 999)
+        return cal.timeInMillis
     }
 
     private fun updateQuotesWidgets(quoteText: String, quoteCategory: String) {
@@ -189,8 +351,41 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         val mediumIds = appWidgetManager.getAppWidgetIds(
             android.content.ComponentName(context, com.example.motivation.widget.JournalMediumWidgetProvider::class.java)
         )
-        mediumIntent.putExtra(android.appwidget.AppWidgetManager.EXTRA_APPWIDGET_IDS, mediumIds)
         context.sendBroadcast(mediumIntent)
+    }
+
+    fun favoriteQuotes(quotes: List<Quote>) {
+        viewModelScope.launch {
+            quotes.forEach { quote ->
+                if (!favorites.value.any { it.text == quote.text }) {
+                    repository?.addFavorite(quote)
+                }
+            }
+        }
+    }
+
+    fun removeFavorites(quotes: List<Quote>) {
+        viewModelScope.launch {
+            quotes.forEach { quote ->
+                repository?.removeFavorite(quote)
+            }
+        }
+    }
+
+    fun removeHistory(quotes: List<Quote>) {
+        viewModelScope.launch {
+            quotes.forEach { quote ->
+                repository?.deleteHistoryByText(quote.text)
+            }
+        }
+    }
+
+    fun reinsertHistory(quotes: List<Quote>) {
+        viewModelScope.launch {
+            quotes.forEach { quote ->
+                repository?.addToHistory(quote)
+            }
+        }
     }
 }
 

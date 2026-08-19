@@ -19,3 +19,7 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Fix missing class errors for Google Tink / Security Crypto in R8
+-dontwarn com.google.errorprone.annotations.Immutable
+-dontwarn javax.annotation.concurrent.GuardedBy

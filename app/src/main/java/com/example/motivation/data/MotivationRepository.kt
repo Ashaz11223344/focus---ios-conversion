@@ -33,6 +33,18 @@ class MotivationRepository(private val dao: MotivationDao) {
         dao.insertMoodEntry(MoodEntryEntity(id = id, moodName = name, moodEmoji = emoji, moodValue = value))
     }
 
+    suspend fun getMoodEntryForDayRange(startDate: Long, endDate: Long): MoodEntry? {
+        return dao.getMoodEntryForDayRange(startDate, endDate)?.toModel()
+    }
+
+    suspend fun getMoodLogsBetween(startDate: Long, endDate: Long): List<MoodEntry> {
+        return dao.getMoodLogsBetween(startDate, endDate).map { it.toModel() }
+    }
+
+    suspend fun getJournalEntriesBetween(startDate: Long, endDate: Long): List<JournalEntry> {
+        return dao.getJournalEntriesBetween(startDate, endDate).map { it.toModel() }
+    }
+
     // Favorites
     val allFavorites: Flow<List<Quote>> = dao.getAllFavorites().map { entities ->
         entities.map { Quote(it.text, it.category) }
@@ -66,7 +78,48 @@ class MotivationRepository(private val dao: MotivationDao) {
         dao.insertHistory(QuoteHistoryEntity(text = quote.text, category = quote.category))
     }
 
+    suspend fun clearHistory() {
+        dao.clearHistory()
+    }
+
+    suspend fun deleteHistoryByText(quoteText: String) {
+        dao.deleteHistoryByText(quoteText)
+    }
+
+    suspend fun deleteJournalEntry(entry: JournalEntry) {
+        val entity = JournalEntryEntity(
+            id = entry.id,
+            content = entry.content,
+            timestamp = entry.timestamp,
+            dateDisplay = entry.dateDisplay,
+            updatedAt = entry.updatedAt
+        )
+        dao.deleteJournalEntry(entity)
+    }
+
+    suspend fun insertJournalEntryDirect(entry: JournalEntry) {
+        val entity = JournalEntryEntity(
+            id = entry.id,
+            content = entry.content,
+            timestamp = entry.timestamp,
+            dateDisplay = entry.dateDisplay,
+            updatedAt = entry.updatedAt
+        )
+        dao.insertJournalEntry(entity)
+    }
+
+    suspend fun updateJournalEntry(entry: JournalEntry) {
+        val entity = JournalEntryEntity(
+            id = entry.id,
+            content = entry.content,
+            timestamp = entry.timestamp,
+            dateDisplay = entry.dateDisplay,
+            updatedAt = entry.updatedAt
+        )
+        dao.updateJournalEntry(entity)
+    }
+
     // Mapper extensions
-    private fun JournalEntryEntity.toModel() = JournalEntry(id, content, timestamp, dateDisplay)
+    private fun JournalEntryEntity.toModel() = JournalEntry(id, content, timestamp, dateDisplay, updatedAt)
     private fun MoodEntryEntity.toModel() = MoodEntry(id, moodName, moodEmoji, moodValue, timestamp)
 }

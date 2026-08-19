@@ -12,6 +12,12 @@ interface MotivationDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertJournalEntry(entry: JournalEntryEntity)
 
+    @Update
+    suspend fun updateJournalEntry(entry: JournalEntryEntity)
+
+    @Delete
+    suspend fun deleteJournalEntry(entry: JournalEntryEntity)
+
     @Query("SELECT * FROM journal_entries ORDER BY timestamp DESC LIMIT 1")
     suspend fun getLatestJournalEntryDirect(): JournalEntryEntity?
 
@@ -21,6 +27,18 @@ interface MotivationDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertMoodEntry(entry: MoodEntryEntity)
+
+    @Query("SELECT * FROM mood_entries WHERE timestamp BETWEEN :startDate AND :endDate ORDER BY timestamp ASC")
+    suspend fun getMoodLogsBetween(startDate: Long, endDate: Long): List<MoodEntryEntity>
+
+    @Query("SELECT * FROM mood_entries WHERE timestamp BETWEEN :startOfDay AND :endOfDay ORDER BY timestamp DESC LIMIT 1")
+    suspend fun getMoodEntryForDayRange(startOfDay: Long, endOfDay: Long): MoodEntryEntity?
+
+    @Query("DELETE FROM mood_entries WHERE id NOT IN (SELECT MAX(id) FROM mood_entries GROUP BY date(timestamp / 1000, 'unixepoch', 'localtime'))")
+    suspend fun deleteDuplicateMoods()
+
+    @Query("SELECT * FROM journal_entries WHERE timestamp BETWEEN :startDate AND :endDate ORDER BY timestamp ASC")
+    suspend fun getJournalEntriesBetween(startDate: Long, endDate: Long): List<JournalEntryEntity>
 
     // Favorites
     @Query("SELECT * FROM favorites ORDER BY timestamp DESC")
@@ -42,6 +60,46 @@ interface MotivationDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertHistory(history: QuoteHistoryEntity)
 
+    @Query("DELETE FROM history")
+    suspend fun clearHistory()
+
     @Query("DELETE FROM history WHERE text = :quoteText")
     suspend fun deleteHistoryByText(quoteText: String)
+
+    // --- Backup & Restore Direct Operations ---
+    @Query("SELECT * FROM journal_entries")
+    suspend fun getAllJournalEntriesDirect(): List<JournalEntryEntity>
+
+    @Query("SELECT * FROM mood_entries")
+    suspend fun getAllMoodEntriesDirect(): List<MoodEntryEntity>
+
+    @Query("SELECT * FROM favorites")
+    suspend fun getAllFavoritesDirect(): List<FavoriteQuoteEntity>
+
+    @Query("SELECT * FROM history")
+    suspend fun getAllHistoryDirect(): List<QuoteHistoryEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertJournalEntries(entries: List<JournalEntryEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertMoodEntries(entries: List<MoodEntryEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertFavorites(entries: List<FavoriteQuoteEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertHistory(entries: List<QuoteHistoryEntity>)
+
+    @Query("DELETE FROM journal_entries")
+    suspend fun deleteAllJournalEntries()
+
+    @Query("DELETE FROM mood_entries")
+    suspend fun deleteAllMoodEntries()
+
+    @Query("DELETE FROM favorites")
+    suspend fun deleteAllFavorites()
+
+    @Query("DELETE FROM history")
+    suspend fun deleteAllHistory()
 }

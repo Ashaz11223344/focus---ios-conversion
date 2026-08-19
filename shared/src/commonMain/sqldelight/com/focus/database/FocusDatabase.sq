@@ -1,0 +1,260 @@
+-- Journal Entries
+CREATE TABLE journal_entries (
+    id TEXT PRIMARY KEY NOT NULL,
+    content TEXT NOT NULL,
+    timestamp INTEGER NOT NULL,
+    dateDisplay TEXT NOT NULL,
+    updatedAt INTEGER
+);
+
+selectAllJournalEntries:
+SELECT * FROM journal_entries ORDER BY timestamp DESC;
+
+getLatestJournalEntry:
+SELECT * FROM journal_entries ORDER BY timestamp DESC LIMIT 1;
+
+getJournalEntriesBetween:
+SELECT * FROM journal_entries WHERE timestamp BETWEEN :startDate AND :endDate ORDER BY timestamp ASC;
+
+insertJournalEntry:
+INSERT OR REPLACE INTO journal_entries(id, content, timestamp, dateDisplay, updatedAt)
+VALUES (?, ?, ?, ?, ?);
+
+deleteJournalEntry:
+DELETE FROM journal_entries WHERE id = :id;
+
+deleteAllJournalEntries:
+DELETE FROM journal_entries;
+
+-- Mood Entries
+CREATE TABLE mood_entries (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    moodName TEXT NOT NULL,
+    moodEmoji TEXT NOT NULL,
+    moodValue INTEGER NOT NULL,
+    timestamp INTEGER NOT NULL
+);
+
+selectAllMoodEntries:
+SELECT * FROM mood_entries ORDER BY timestamp DESC;
+
+getMoodLogsBetween:
+SELECT * FROM mood_entries WHERE timestamp BETWEEN :startDate AND :endDate ORDER BY timestamp ASC;
+
+getMoodEntryForDayRange:
+SELECT * FROM mood_entries WHERE timestamp BETWEEN :startOfDay AND :endOfDay ORDER BY timestamp DESC LIMIT 1;
+
+insertMoodEntry:
+INSERT OR REPLACE INTO mood_entries(id, moodName, moodEmoji, moodValue, timestamp)
+VALUES (?, ?, ?, ?, ?);
+
+deleteDuplicateMoods:
+DELETE FROM mood_entries WHERE id NOT IN (SELECT MAX(id) FROM mood_entries GROUP BY date(timestamp / 1000, 'unixepoch', 'localtime'));
+
+deleteAllMoodEntries:
+DELETE FROM mood_entries;
+
+-- Favorite Quotes
+CREATE TABLE favorites (
+    text TEXT PRIMARY KEY NOT NULL,
+    category TEXT NOT NULL,
+    timestamp INTEGER NOT NULL
+);
+
+selectAllFavorites:
+SELECT * FROM favorites ORDER BY timestamp DESC;
+
+isFavorite:
+SELECT EXISTS(SELECT 1 FROM favorites WHERE text = :quoteText);
+
+insertFavorite:
+INSERT OR REPLACE INTO favorites(text, category, timestamp)
+VALUES (?, ?, ?);
+
+deleteFavorite:
+DELETE FROM favorites WHERE text = :quoteText;
+
+deleteAllFavorites:
+DELETE FROM favorites;
+
+-- Quote History
+CREATE TABLE history (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    text TEXT NOT NULL,
+    category TEXT NOT NULL,
+    timestamp INTEGER NOT NULL
+);
+
+selectRecentHistory:
+SELECT * FROM history ORDER BY timestamp DESC LIMIT 100;
+
+selectAllHistory:
+SELECT * FROM history ORDER BY timestamp DESC;
+
+insertHistory:
+INSERT OR REPLACE INTO history(id, text, category, timestamp)
+VALUES (?, ?, ?, ?);
+
+deleteHistoryByText:
+DELETE FROM history WHERE text = :quoteText;
+
+clearHistory:
+DELETE FROM history;
+
+-- Private Journal
+CREATE TABLE private_journal_entries (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    content TEXT NOT NULL,
+    timestamp INTEGER NOT NULL,
+    wordCount INTEGER NOT NULL
+);
+
+selectAllPrivateEntries:
+SELECT * FROM private_journal_entries ORDER BY timestamp DESC;
+
+getPrivateEntriesBetween:
+SELECT * FROM private_journal_entries WHERE timestamp BETWEEN :startDate AND :endDate ORDER BY timestamp ASC;
+
+insertPrivateEntry:
+INSERT OR REPLACE INTO private_journal_entries(id, content, timestamp, wordCount)
+VALUES (?, ?, ?, ?);
+
+deletePrivateEntry:
+DELETE FROM private_journal_entries WHERE id = :id;
+
+deleteAllPrivateEntries:
+DELETE FROM private_journal_entries;
+
+-- DND Schedules
+CREATE TABLE dnd_schedules (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    label TEXT NOT NULL,
+    startHour INTEGER NOT NULL,
+    startMinute INTEGER NOT NULL,
+    endHour INTEGER NOT NULL,
+    endMinute INTEGER NOT NULL,
+    daysOfWeek INTEGER NOT NULL,
+    isEnabled INTEGER NOT NULL DEFAULT 1
+);
+
+selectAllDndSchedules:
+SELECT * FROM dnd_schedules ORDER BY startHour ASC;
+
+getDndScheduleById:
+SELECT * FROM dnd_schedules WHERE id = :id;
+
+insertDndSchedule:
+INSERT OR REPLACE INTO dnd_schedules(id, label, startHour, startMinute, endHour, endMinute, daysOfWeek, isEnabled)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+deleteDndSchedule:
+DELETE FROM dnd_schedules WHERE id = :id;
+
+deleteAllDndSchedules:
+DELETE FROM dnd_schedules;
+
+-- App Block Rules
+CREATE TABLE app_block_rules (
+    packageName TEXT PRIMARY KEY NOT NULL,
+    appName TEXT NOT NULL,
+    startHour INTEGER NOT NULL,
+    startMinute INTEGER NOT NULL,
+    endHour INTEGER NOT NULL,
+    endMinute INTEGER NOT NULL,
+    daysOfWeek INTEGER NOT NULL,
+    isEnabled INTEGER NOT NULL DEFAULT 1
+);
+
+selectAllAppBlockRules:
+SELECT * FROM app_block_rules ORDER BY appName ASC;
+
+getEnabledAppBlockRules:
+SELECT * FROM app_block_rules WHERE isEnabled = 1;
+
+insertAppBlockRule:
+INSERT OR REPLACE INTO app_block_rules(packageName, appName, startHour, startMinute, endHour, endMinute, daysOfWeek, isEnabled)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+deleteAppBlockRule:
+DELETE FROM app_block_rules WHERE packageName = :pkg;
+
+deleteAllAppBlockRules:
+DELETE FROM app_block_rules;
+
+-- Achievements
+CREATE TABLE achievements (
+    achievementId TEXT PRIMARY KEY NOT NULL,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    iconEmoji TEXT NOT NULL,
+    tier TEXT NOT NULL,
+    tierColor TEXT NOT NULL,
+    unlockedDate INTEGER,
+    isUnlocked INTEGER NOT NULL,
+    progressCurrent INTEGER NOT NULL,
+    progressTarget INTEGER NOT NULL,
+    category TEXT NOT NULL
+);
+
+selectAllAchievements:
+SELECT * FROM achievements;
+
+getAchievementById:
+SELECT * FROM achievements WHERE achievementId = :id LIMIT 1;
+
+getAchievementsCount:
+SELECT COUNT(*) FROM achievements;
+
+insertAchievement:
+INSERT OR REPLACE INTO achievements(achievementId, title, description, iconEmoji, tier, tierColor, unlockedDate, isUnlocked, progressCurrent, progressTarget, category)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+deleteAllAchievements:
+DELETE FROM achievements;
+
+-- Focus Sessions
+CREATE TABLE focus_sessions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+    timestamp INTEGER NOT NULL
+);
+
+selectAllSessions:
+SELECT * FROM focus_sessions ORDER BY timestamp DESC;
+
+getSessionsCount:
+SELECT COUNT(*) FROM focus_sessions;
+
+insertSession:
+INSERT INTO focus_sessions(timestamp)
+VALUES (:timestamp);
+
+deleteAllSessions:
+DELETE FROM focus_sessions;
+
+-- Sync Queue
+CREATE TABLE sync_queue (
+    id TEXT PRIMARY KEY NOT NULL,
+    entityType TEXT NOT NULL,
+    entityId TEXT NOT NULL,
+    operation TEXT NOT NULL,
+    payload TEXT NOT NULL,
+    timestamp INTEGER NOT NULL,
+    status TEXT NOT NULL,
+    retryCount INTEGER NOT NULL DEFAULT 0
+);
+
+selectAllPendingSyncItems:
+SELECT * FROM sync_queue WHERE status = 'PENDING' ORDER BY timestamp ASC;
+
+insertSyncItem:
+INSERT OR REPLACE INTO sync_queue(id, entityType, entityId, operation, payload, timestamp, status, retryCount)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+updateSyncItemStatus:
+UPDATE sync_queue SET status = :status, retryCount = :retryCount WHERE id = :id;
+
+deleteSyncItem:
+DELETE FROM sync_queue WHERE id = :id;
+
+clearSyncQueue:
+DELETE FROM sync_queue;

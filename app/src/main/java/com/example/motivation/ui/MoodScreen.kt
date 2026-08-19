@@ -1,11 +1,18 @@
 package com.example.motivation.ui
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import kotlinx.coroutines.launch
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import java.text.SimpleDateFormat
+import java.util.Locale
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -22,11 +29,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import com.example.motivation.ui.theme.LiterataFontFamily
+import com.example.motivation.ui.theme.VibrantOrange
 import com.example.motivation.viewmodel.MainViewModel
 import com.example.motivation.viewmodel.MoodStats
+import java.util.Calendar
 
 @Composable
-fun MoodScreen(mainViewModel: MainViewModel = viewModel()) {
+fun MoodScreen(
+    navController: NavController? = null,
+    mainViewModel: MainViewModel = viewModel()
+) {
     val moods = listOf(
         MoodData("Happy", Icons.Rounded.SentimentVerySatisfied, 5),
         MoodData("Inspired", Icons.Rounded.AutoAwesome, 5),
@@ -39,13 +53,25 @@ fun MoodScreen(mainViewModel: MainViewModel = viewModel()) {
     )
     
     val stats by mainViewModel.monthlyMoodStats.collectAsState()
+    val todayMood by mainViewModel.todayMoodEntry.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
     var selectedMood by remember { mutableStateOf<MoodData?>(null) }
-    var showSuccessMessage by remember { mutableStateOf(false) }
+    var showPartialWarningDialog by remember { mutableStateOf(false) }
+    var showMoodHistoryDialog by remember { mutableStateOf(false) }
 
-    // Colors from palette
-    val orange = Color(0xFFFC6E20)
-    val cream = Color(0xFFFFE7D0)
-    val charcoalGray = Color(0xFF323232)
+    LaunchedEffect(todayMood) {
+        todayMood?.let { logged ->
+            selectedMood = moods.firstOrNull { it.name.equals(logged.moodName, ignoreCase = true) }
+        }
+    }
+
+    // Theme-aware colors
+    val orange = VibrantOrange
+    val cardBg = MaterialTheme.colorScheme.surface
+    val textColor = MaterialTheme.colorScheme.onSurface
+    val textMuted = MaterialTheme.colorScheme.onSurfaceVariant
+    val onBgColor = MaterialTheme.colorScheme.onBackground
 
     val configuration = androidx.compose.ui.platform.LocalConfiguration.current
     val screenWidthDp = configuration.screenWidthDp
@@ -53,11 +79,6 @@ fun MoodScreen(mainViewModel: MainViewModel = viewModel()) {
         screenWidthDp > 840 -> 4
         screenWidthDp > 600 -> 3
         else -> 2
-    }
-    val gridHeight = when (columns) {
-        4 -> 360.dp
-        3 -> 520.dp
-        else -> 700.dp
     }
 
     Box(
@@ -82,14 +103,313 @@ fun MoodScreen(mainViewModel: MainViewModel = viewModel()) {
                     fontStyle = FontStyle.Italic,
                     fontSize = 32.sp
                 ),
-                color = cream,
+                color = onBgColor,
                 modifier = Modifier.padding(vertical = 16.dp)
             )
 
             // Analytics Card
             stats?.let { moodStats ->
-                MoodAnalyticsCard(moodStats, orange, charcoalGray, cream)
+                MoodAnalyticsCard(moodStats, orange, cardBg, textColor, textMuted)
                 Spacer(modifier = Modifier.height(24.dp))
+            }
+
+            // Weekly Wrapped Launcher Card
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        val isSunday = Calendar.getInstance().get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY
+                        if (isSunday) {
+                            navController?.navigate("weekly_report/false")
+                        } else {
+                            showPartialWarningDialog = true
+                        }
+                    },
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = cardBg),
+                border = androidx.compose.foundation.BorderStroke(1.dp, orange.copy(alpha = 0.4f))
+            ) {
+                Row(
+                    modifier = Modifier.padding(20.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(orange.copy(alpha = 0.15f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("✦", fontSize = 24.sp, color = orange)
+                    }
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Weekly Focus Wrapped",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = LiterataFontFamily
+                            ),
+                            color = textColor
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Generate your weekly mood & journal summary",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = textMuted
+                        )
+                    }
+                    Icon(
+                        imageVector = Icons.Rounded.ChevronRight,
+                        contentDescription = "Go",
+                        tint = orange
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Mood History Card
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        showMoodHistoryDialog = true
+                    },
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = cardBg),
+                border = androidx.compose.foundation.BorderStroke(1.dp, orange.copy(alpha = 0.4f))
+            ) {
+                Row(
+                    modifier = Modifier.padding(20.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(48.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(orange.copy(alpha = 0.15f)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.History,
+                            contentDescription = "History",
+                            tint = orange,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Mood History ✦",
+                            style = MaterialTheme.typography.titleMedium.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontFamily = LiterataFontFamily
+                            ),
+                            color = textColor
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Browse your complete emotional journey",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = textMuted
+                        )
+                    }
+                    Icon(
+                        imageVector = Icons.Rounded.ChevronRight,
+                        contentDescription = "Go",
+                        tint = orange
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Mood History Dialog
+            if (showMoodHistoryDialog) {
+                AlertDialog(
+                    onDismissRequest = { showMoodHistoryDialog = false },
+                    title = {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.History,
+                                contentDescription = null,
+                                tint = orange,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Text(
+                                text = "Your Mood Journey",
+                                fontFamily = LiterataFontFamily,
+                                fontWeight = FontWeight.Bold,
+                                color = textColor
+                            )
+                        }
+                    },
+                    text = {
+                        val allEntries by mainViewModel.moodEntries.collectAsState()
+                        if (allEntries.isEmpty()) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(200.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "No logged mood entries yet ✦",
+                                    fontFamily = LiterataFontFamily,
+                                    fontStyle = FontStyle.Italic,
+                                    color = textMuted
+                                )
+                            }
+                        } else {
+                            val sortedEntries = allEntries.sortedByDescending { it.timestamp }
+                            LazyColumn(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .heightIn(max = 400.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                            ) {
+                                items(sortedEntries) { entry ->
+                                    val dateStr = remember(entry.timestamp) {
+                                        val cal = Calendar.getInstance().apply { timeInMillis = entry.timestamp }
+                                        val sdf = SimpleDateFormat("MMM d, yyyy • h:mm a", Locale.getDefault())
+                                        sdf.format(cal.time)
+                                    }
+                                    
+                                    val moodIcon = when (entry.moodName.lowercase(Locale.ROOT)) {
+                                        "happy" -> Icons.Rounded.SentimentVerySatisfied
+                                        "inspired" -> Icons.Rounded.AutoAwesome
+                                        "calm" -> Icons.Rounded.SelfImprovement
+                                        "neutral" -> Icons.Rounded.SentimentNeutral
+                                        "sad" -> Icons.Rounded.SentimentVeryDissatisfied
+                                        "tired" -> Icons.Rounded.Bedtime
+                                        "angry" -> Icons.Rounded.Whatshot
+                                        "anxious" -> Icons.Rounded.Psychology
+                                        else -> Icons.Rounded.SentimentNeutral
+                                    }
+
+                                    Card(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        shape = RoundedCornerShape(16.dp),
+                                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
+                                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                                    ) {
+                                        Row(
+                                            modifier = Modifier.padding(14.dp),
+                                            verticalAlignment = Alignment.CenterVertically
+                                        ) {
+                                            Icon(
+                                                imageVector = moodIcon,
+                                                contentDescription = entry.moodName,
+                                                tint = orange,
+                                                modifier = Modifier.size(32.dp)
+                                            )
+                                            Spacer(modifier = Modifier.width(16.dp))
+                                            Column(modifier = Modifier.weight(1f)) {
+                                                Text(
+                                                    text = entry.moodName.replaceFirstChar { it.uppercase() },
+                                                    style = MaterialTheme.typography.titleMedium.copy(
+                                                        fontWeight = FontWeight.Bold,
+                                                        fontFamily = LiterataFontFamily
+                                                    ),
+                                                    color = textColor
+                                                )
+                                                Spacer(modifier = Modifier.height(2.dp))
+                                                Text(
+                                                    text = dateStr,
+                                                    style = MaterialTheme.typography.bodySmall,
+                                                    color = textMuted
+                                                )
+                                            }
+                                            Text(
+                                                text = "${entry.moodValue}/5",
+                                                style = MaterialTheme.typography.titleMedium.copy(
+                                                    fontWeight = FontWeight.Bold,
+                                                    fontFamily = LiterataFontFamily
+                                                ),
+                                                color = orange
+                                            )
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    confirmButton = {
+                        Button(
+                            onClick = { showMoodHistoryDialog = false },
+                            colors = ButtonDefaults.buttonColors(containerColor = orange)
+                        ) {
+                            Text("Done", color = Color.White)
+                        }
+                    },
+                    containerColor = cardBg,
+                    shape = RoundedCornerShape(24.dp)
+                )
+            }
+
+            // Partial Week Warning Dialog
+            if (showPartialWarningDialog) {
+                val todayCalendar = Calendar.getInstance()
+                val daysLeft = if (todayCalendar.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
+                    0
+                } else {
+                    Calendar.SATURDAY - todayCalendar.get(Calendar.DAY_OF_WEEK) + 1
+                }
+                AlertDialog(
+                    onDismissRequest = { showPartialWarningDialog = false },
+                    title = {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Bedtime,
+                                contentDescription = null,
+                                tint = orange,
+                                modifier = Modifier.size(24.dp)
+                            )
+                            Text(
+                                text = "Week isn't over yet",
+                                fontFamily = LiterataFontFamily,
+                                fontWeight = FontWeight.Bold,
+                                color = textColor
+                            )
+                        }
+                    },
+                    text = {
+                        Text(
+                            text = "You still have $daysLeft day${if (daysLeft == 1) "" else "s"} left this week. This will be a partial snapshot of your journey so far.",
+                            fontFamily = LiterataFontFamily,
+                            color = textMuted
+                        )
+                    },
+                    confirmButton = {
+                        Button(
+                            onClick = {
+                                showPartialWarningDialog = false
+                                navController?.navigate("weekly_report/true")
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = orange)
+                        ) {
+                            Text("Generate Anyway →", color = Color.White)
+                        }
+                    },
+                    dismissButton = {
+                        OutlinedButton(
+                            onClick = { showPartialWarningDialog = false },
+                            border = androidx.compose.foundation.BorderStroke(1.dp, textColor.copy(alpha = 0.3f)),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = textColor)
+                        ) {
+                            Text("Cancel")
+                        }
+                    },
+                    containerColor = cardBg,
+                    shape = RoundedCornerShape(24.dp)
+                )
             }
 
             Text(
@@ -98,46 +418,67 @@ fun MoodScreen(mainViewModel: MainViewModel = viewModel()) {
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp
                 ),
-                color = cream,
+                color = onBgColor,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
 
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(columns),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier.height(gridHeight),
-                userScrollEnabled = false
-            ) {
-                items(moods) { mood ->
-                    val isSelected = selectedMood == mood
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .aspectRatio(1.1f)
-                            .clickable { selectedMood = mood },
-                        shape = RoundedCornerShape(24.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = if (isSelected) orange else charcoalGray
-                        )
-                    ) {
-                        Column(
-                            modifier = Modifier.fillMaxSize(),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
+            if (todayMood != null) {
+                Text(
+                    text = "You've already logged your mood today. You can update it.",
+                    style = MaterialTheme.typography.bodyMedium.copy(
+                        fontStyle = FontStyle.Italic,
+                        fontWeight = FontWeight.Medium
+                    ),
+                    color = orange,
+                    modifier = Modifier.padding(bottom = 16.dp)
+                )
+            }
+
+            // Chunk moods into rows based on screen width columns. This removes the nested unscrollable LazyVerticalGrid 
+            // with a hardcoded height, preventing items from being cut off on foldable/flip phones or varying aspect ratios.
+            moods.chunked(columns).forEach { rowMoods ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    rowMoods.forEach { mood ->
+                        val isSelected = selectedMood == mood
+                        Card(
+                            modifier = Modifier
+                                .weight(1f)
+                                .aspectRatio(1.1f)
+                                .clickable { selectedMood = mood },
+                            shape = RoundedCornerShape(24.dp),
+                            border = if (isSelected) BorderStroke(2.dp, orange) else BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)),
+                            colors = CardDefaults.cardColors(
+                                containerColor = if (isSelected) orange else cardBg
+                            )
                         ) {
-                            Icon(
-                                imageVector = mood.icon,
-                                contentDescription = mood.name,
-                                modifier = Modifier.size(48.dp),
-                                tint = if (isSelected) Color.White else orange
-                            )
-                            Spacer(modifier = Modifier.height(12.dp))
-                            Text(
-                                text = mood.name,
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                                color = if (isSelected) Color.White else cream
-                            )
+                            Column(
+                                modifier = Modifier.fillMaxSize(),
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    imageVector = mood.icon,
+                                    contentDescription = mood.name,
+                                    modifier = Modifier.size(48.dp),
+                                    tint = if (isSelected) Color.White else orange
+                                )
+                                Spacer(modifier = Modifier.height(12.dp))
+                                Text(
+                                    text = mood.name,
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                                    color = if (isSelected) Color.White else textColor
+                                )
+                            }
+                        }
+                    }
+                    if (rowMoods.size < columns) {
+                        repeat(columns - rowMoods.size) {
+                            Box(modifier = Modifier.weight(1f))
                         }
                     }
                 }
@@ -151,9 +492,15 @@ fun MoodScreen(mainViewModel: MainViewModel = viewModel()) {
                         selectedMood?.let { 
                             // Map icon name to emoji or similar for DB storage
                             val iconId = it.name.lowercase()
-                            mainViewModel.addMoodEntry(it.name, iconId, it.value)
-                            selectedMood = null
-                            showSuccessMessage = true
+                            mainViewModel.addMoodEntry(it.name, iconId, it.value) { isUpdate ->
+                                coroutineScope.launch {
+                                    val msg = if (isUpdate) "Mood updated for today ✦" else "Mood logged ✦"
+                                    snackbarHostState.showSnackbar(
+                                        message = msg,
+                                        duration = SnackbarDuration.Short
+                                    )
+                                }
+                            }
                         }
                     },
                     modifier = Modifier
@@ -163,39 +510,43 @@ fun MoodScreen(mainViewModel: MainViewModel = viewModel()) {
                     colors = ButtonDefaults.buttonColors(containerColor = orange)
                 ) {
                     Text(
-                        "Log Mood", 
+                        text = if (todayMood == null) "Log My Mood" else "Update My Mood", 
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                         color = Color.White
                     )
                 }
             }
 
-            if (showSuccessMessage) {
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    "Mood logged successfully!",
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-                    color = orange,
-                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold)
-                )
-                LaunchedEffect(Unit) {
-                    kotlinx.coroutines.delay(2000)
-                    showSuccessMessage = false
-                }
-            }
-
             Spacer(modifier = Modifier.height(40.dp))
+        }
+
+        SnackbarHost(
+            hostState = snackbarHostState,
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 16.dp)
+        ) { data ->
+            Snackbar(
+                modifier = Modifier
+                    .padding(12.dp)
+                    .border(1.dp, orange.copy(alpha = 0.5f), RoundedCornerShape(12.dp)),
+                shape = RoundedCornerShape(12.dp),
+                containerColor = cardBg,
+                contentColor = textColor
+            ) {
+                Text(text = data.visuals.message)
+            }
         }
     }
 }
 
 @Composable
-fun MoodAnalyticsCard(stats: MoodStats, orange: Color, cardBg: Color, textColor: Color) {
+fun MoodAnalyticsCard(stats: MoodStats, orange: Color, cardBg: Color, textColor: Color, textMuted: Color) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(28.dp),
-        colors = CardDefaults.cardColors(containerColor = cardBg)
+        colors = CardDefaults.cardColors(containerColor = cardBg),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
     ) {
         Column(modifier = Modifier.padding(24.dp)) {
             Text(
@@ -214,7 +565,7 @@ fun MoodAnalyticsCard(stats: MoodStats, orange: Color, cardBg: Color, textColor:
                     Text(
                         "Average Score",
                         style = MaterialTheme.typography.labelLarge,
-                        color = textColor.copy(alpha = 0.5f)
+                        color = textMuted
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
@@ -231,7 +582,7 @@ fun MoodAnalyticsCard(stats: MoodStats, orange: Color, cardBg: Color, textColor:
                     Text(
                         "Most Frequent",
                         style = MaterialTheme.typography.labelLarge,
-                        color = textColor.copy(alpha = 0.5f)
+                        color = textMuted
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
@@ -251,7 +602,7 @@ fun MoodAnalyticsCard(stats: MoodStats, orange: Color, cardBg: Color, textColor:
                     .height(12.dp)
                     .clip(RoundedCornerShape(6.dp)),
                 color = orange,
-                trackColor = Color.White.copy(alpha = 0.05f)
+                trackColor = textColor.copy(alpha = 0.1f)
             )
         }
     }

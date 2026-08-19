@@ -21,3 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Motivation"
 include(":app")
+include(":shared")
