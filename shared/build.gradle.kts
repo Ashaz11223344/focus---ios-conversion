@@ -26,6 +26,7 @@ kotlin {
             baseName = "shared"
             xcf.add(this)
             isStatic = true
+            linkerOpts.add("-lsqlite3")
         }
     }
 
